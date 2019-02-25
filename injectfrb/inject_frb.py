@@ -21,8 +21,7 @@ import reader
 import tools
 
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
-                                fn_fil_out, N_FRB, chunksize=100000, 
-                                  simfrb=True):
+                                fn_fil_out, N_FRB, chunksize=100000):
     NFREQ = header['nchans']
 
     for ii in range(N_FRB):
@@ -34,24 +33,6 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
         #data = data_fil_obj.data*0.0
         data = (np.random.normal(120, 10, NFREQ*chunksize))#.astype(np.uint8)
         data = data.reshape(NFREQ, chunksize)
-
-        if simfrb is True:
-            delta_t = header['tsamp'] # delta_t in seconds
-            fch1 = header['fch1']
-            foff = header['foff']
-            fch_f = fch1 + NFREQ*foff
-            freq_arr = np.linspace(fch1, fch_f, NFREQ)
-            dm = 50 + ii
-            freq_ref = 1400.
-            print("Adding FRB to Gaussian data")
-            data_chunk, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ,
-                                               NTIME=chunksize, sim=True,
-                                               fluence=1000, spec_ind=0, 
-                                               width=10*delta_t, dm=dm, scat_tau_ref=0.,
-                                               background_noise=data,
-                                               delta_t=delta_t, plot_burst=False,
-                                               freq=(freq_arr[0], freq_arr[-1]),
-                                               FREQ_REF=freq_ref, scintillate=True)
 
         if ii<0:
             fn_rfi_clean = reader.write_to_fil(data_chunk.transpose(), header, fn_fil_out)
@@ -142,6 +123,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     if gaussian==True:
         fn_fil_out = fn_fil_out.strip('.fil') + '_gaussian.fil'
         inject_in_filterbank_gaussian(data_fil_obj_skel, header, fn_fil_out, N_FRB)
+        exit()
 
     kk = 0
     for ii in xrange(N_FRB):
