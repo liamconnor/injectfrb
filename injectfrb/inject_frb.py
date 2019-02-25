@@ -21,7 +21,7 @@ import reader
 import tools
 
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
-                                fn_fil_out, N_FRB, chunksize=100000):
+                                  fn_fil_out, N_FRB, chunksize=100000):
     NFREQ = header['nchans']
 
     for ii in range(N_FRB):
@@ -264,8 +264,8 @@ if __name__=='__main__':
 
     parser = optparse.OptionParser(prog="inject_frb.py", \
                         version="", \
-                        usage="%prog FN_FILTERBANK FN_FILTERBANK_OUT [OPTIONS]", \
-                        description="Create diagnostic plots for individual triggers")
+                        usage="%prog FN_FILTERBANK OUTDIR [OPTIONS]", \
+                        description="Inject FRBs into filterbank data")
 
     parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
                         help="Only process events above >sig_thresh S/N" \
