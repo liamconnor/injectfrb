@@ -1,10 +1,17 @@
+#!/usr/bin/env python
+"""
+This script will simulate four different FRBs
+with the parameters of four different surveys. 
+It then plots them and saves to pdf.
+"""
+
 import numpy as np
 import matplotlib.pylab as plt
 
 import simulate_frb
 
 def plot_four_frbs():
-    fig = plt.figure(figsize=(8,6))
+    fig = plt.figure(figsize=(10,8))
     cmap = 'Greys'
 
     print("Generating Apertif-like FRB with blue spectrum")
