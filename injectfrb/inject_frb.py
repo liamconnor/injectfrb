@@ -305,14 +305,14 @@ if __name__=='__main__':
                       type='float')
 
     parser.add_option('--calc_snr', action='store_true',
-                        help="calculate S/N of injected pulse", 
-                      )
+                        help="calculate S/N of injected pulse", )
     
     parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
 
     parser.add_option('--gaussian', dest='gaussian', action='store_false',
                         help="write only Gaussian data to fil files", default=False)
 
+    print(options.gaussian)
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -330,10 +330,11 @@ if __name__=='__main__':
 
     if len(options.dm_list)==1:
         inject_in_filterbank(fn_fil, fn_fil_out, N_FRB=options.nfrb,
-                                                        NTIME=2**15, rfi_clean=options.rfi_clean,
-                                                        calc_snr=options.calc_snr, start=0,
-                                                        dm=float(options.dm_list[0]), 
-                                                        gaussian=False, gaussian_noise=True)
+                                NTIME=2**15, rfi_clean=options.rfi_clean,
+                                calc_snr=options.calc_snr, start=0,
+                                dm=float(options.dm_list[0]), 
+                                gaussian=options.gaussian, gaussian_noise=True)
+
         exit()
 
     import multiprocessing
@@ -343,5 +344,5 @@ if __name__=='__main__':
     Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
                                                         calc_snr=options.calc_snr, start=0,
-                                                        dm=float(x), gaussian=True) for x in options.dm_list)
+                                                        dm=float(x), gaussian=options.gaussian) for x in options.dm_list)
 
