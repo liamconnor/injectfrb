@@ -19,29 +19,6 @@ except:
 import simulate_frb
 import reader
 import tools
-#import rfi_test
-
-# width / downsample bug
-
-def test_writer():
-    fn_fil = '/data/03/Triggers/B0329+54/1_dish_B0329+54.fil'
-    fn_out = '/data/03/Triggers/B0329+54/1_dish_B0329+54_output.fil'
-    NFREQ = 1536
-    chunksize = 5e4
-
-    for ii in range(146):
-        data_filobj, freq, delta_t, header = reader.read_fil_data(fn_fil,
-                                start=ii*chunksize, stop=chunksize)
-        data = data_filobj.data
-
-        if ii==0:
-            fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]),
-                                               header, fn_out)
-
-        fil_obj = reader.filterbank.FilterbankFile(fn_out, mode='readwrite')
-        fil_obj.append_spectra(data.transpose())
-
-        print('wrote %d' % ii)
 
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
                                 fn_fil_out, N_FRB, chunksize=100000, 
@@ -70,7 +47,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
             data_chunk, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ,
                                                NTIME=chunksize, sim=True,
                                                fluence=1000, spec_ind=0, 
-                                               width=(10*delta_t, 1), dm=dm, scat_factor=(-5., -4),
+                                               width=10*delta_t, dm=dm, scat_tau_ref=scat_tau_ref,
                                                background_noise=data,
                                                delta_t=delta_t, plot_burst=False,
                                                freq=(freq_arr[0], freq_arr[-1]),
@@ -205,8 +182,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
-                                               fluence=flu, spec_ind=0, width=(10*delta_t, 1.), 
-                                               dm=dm, scat_factor=(-5., -0.25), 
+                                               fluence=flu, spec_ind=0, width=10*delta_t,
+                                               dm=dm, scat_tau_ref=scat_tau_ref, 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
@@ -368,12 +345,3 @@ if __name__=='__main__':
                                                         calc_snr=options.calc_snr, start=0,
                                                         dm=float(x), gaussian=True) for x in options.dm_list)
 
-#    params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
-#                                  NTIME=2**15, rfi_clean=options.rfi_clean, 
-#                                  dm=dm, calc_snr=options.calc_snr, start=0)
-    
-
-#    params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
-#                                  NTIME=2**15, rfi_clean=options.rfi_clean, 
-#                                  dm=dm, calc_snr=options.calc_snr, start=0)
- 
