@@ -24,7 +24,7 @@ def plot_four_frbs():
     dm = 500.
 
     data_apertif, p = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, NTIME=NTIME, sim=True, fluence=1., 
-                            spec_ind=4., width=dt, dm=dm, 
+                            spec_ind=4., width=5*dt, dm=dm, 
                             background_noise=np.zeros([NFREQ, NTIME]), 
                             delta_t=dt, plot_burst=False, 
                             freq=(freq[0],freq[-1]), FREQ_REF=freq_ref,
