@@ -2,8 +2,6 @@ import numpy as np
 import glob
 import scipy.signal
 import optparse 
-# should there maybe be a clustering class
-# and a S/N calculation class?
 
 class AnalyseTriggers:
 
