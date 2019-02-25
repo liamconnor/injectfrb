@@ -89,7 +89,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     """
     SNRTools = tools.SNR_Tools()
     data_fil_obj_skel, freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)
-    print(header)
+
     if type(dm) is not tuple:
         max_dm = dm
     else:
@@ -125,6 +125,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         inject_in_filterbank_gaussian(data_fil_obj_skel, header, fn_fil_out, N_FRB)
         exit()
 
+    print("============ HEADER INFORMATION ============")
     kk = 0
     for ii in xrange(N_FRB):
         dm = np.random.uniform(10., 2000.)
