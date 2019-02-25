@@ -312,10 +312,13 @@ if __name__=='__main__':
     parser.add_option('--gaussian', dest='gaussian', action='store_true',
                         help="write only Gaussian data to fil files", default=False)
 
+    parser.add_option('--gaussian_noise', dest='gaussian_noise', action='store_true',
+                        help="use Gaussian background noise", default=False)
+
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_fil_out = args[1]
-    print(options.gaussian)
+
     if options.dm_low is None:
         if options.dm_high is None:
             dm = 500.
@@ -331,7 +334,8 @@ if __name__=='__main__':
                                 NTIME=2**15, rfi_clean=options.rfi_clean,
                                 calc_snr=options.calc_snr, start=0,
                                 dm=float(options.dm_list[0]), 
-                                gaussian=options.gaussian, gaussian_noise=True)
+                                gaussian=options.gaussian, 
+                                gaussian_noise=options.gaussian_noise)
 
         exit()
 
@@ -342,5 +346,6 @@ if __name__=='__main__':
     Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
                                                         calc_snr=options.calc_snr, start=0,
-                                                        dm=float(x), gaussian=options.gaussian) for x in options.dm_list)
+                                                        dm=float(x), gaussian=options.gaussian, 
+                                                        gaussian_noise=options.gaussian_noise) for x in options.dm_list)
 
