@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import time
 
@@ -8,8 +10,7 @@ SNR_MIN = 7
 backend = 'PRESTO'
 
 infile = '/data1/output/snr_tests_liam/backgrounddata_CB00.fil'
-
-#infile = '/data2/output/20190121/2019-01-21-10:14:45.B1933+16/filterbank/CB24.fil'
+outdir = '/data1/output/snr_tests_liam/'
 
 if not os.path.isdir(outdir):
     os.mkdir(outdir)
