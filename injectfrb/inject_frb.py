@@ -158,10 +158,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             print("Using Gaussian background noise")
             offset = 0
             NTIME = chunksize
-            data_event = np.random.normal(100, 1, NTIME*NFREQ)
+            data_event = np.random.normal(100, 5, NTIME*NFREQ)
             data_event = data_event.reshape(NFREQ, NTIME)
-            flu = 50.0
-            dm = 100.0 + ii*10.
+            flu = np.random.uniform(1, 1000)**(-2/3.)
+            flu *= 1000**(2/3.+1) + 0.75*dm
+            dm = 100.0 + ii*50.
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
             flu = np.random.uniform(1, 1000)**(-2/3.)
@@ -179,7 +180,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         dm_ = params[0]
         params.append(offset)
 
-        print("%d/%d Injecting with DM:%d width_samp: %.3f offset: %d" % 
+        print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d" % 
                                 (ii+1, N_FRB, dm_, params[2]/dt, offset))
 
 #        data_event[data_event>255] = 255
@@ -199,14 +200,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         if calc_snr is True:
             data_filobj.data = copy.copy(data)
-#            dummy_filobj.data = data
-#            dummy_filobj.dedisperse(150.0)
             data_filobj.dedisperse(dm_)
             end_t = abs(4.15e3*dm_*(freq[0]**-2 - freq[1]**-2))
             end_pix = int(end_t / dt)
             end_pix_ds = int(end_t / dt / downsamp)
 
-#            data_rb = dummy_filobj.data
             data_rb = data_filobj.data
             data_rb = data_rb[:, :-end_pix].mean(0)
 
@@ -219,10 +217,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                 kk += 1
                 continue
                 
-            print("S/N: %.2f width_used: %.3f width_tru: %.3f DM: %.1f" 
+            print("S/N: %.2f width_used: %.1f width_tru: %.1f DM: %.1f" 
                   % (snr_max, width_max, width/delta_t, dm_))
-#            np.save('data_%.2fwidth_used:%.3fwidth_tru:%.3fDM:%.1f' 
-#                    % (snr_max, width_max, width/delta_t, dm_), data_rb)
 
             t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
             t0 = t0_ind*delta_t #huge hack
