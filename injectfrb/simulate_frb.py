@@ -280,10 +280,10 @@ def uniform_range(min_, max_):
     return random.uniform(min_, max_)
 
 
-def gen_simulated_frb(NFREQ=16, NTIME=250, sim=True, fluence=(0.03,0.3),
-                spec_ind=(-4, 4), width=(2*0.0016, 1), dm=(-0.01, 0.01),
-                background_noise=None, delta_t=0.0016,
-                plot_burst=False, freq=(800, 400), FREQ_REF=600., scintillate=True,
+def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
+                spec_ind=0.0, width=0.0005, dm=0,
+                background_noise=None, delta_t=0.00008192,
+                plot_burst=False, freq=(1520., 1220.), FREQ_REF=1400., scintillate=False,
                 scat_tau_ref=0.0, disp_ind=2.):
     """ Simulate fast radio bursts using the EventSimulator class.
 
@@ -340,7 +340,7 @@ def gen_simulated_frb(NFREQ=16, NTIME=250, sim=True, fluence=(0.03,0.3),
     # Realize event parameters for a single FRB
 #    dm_, fluence_, width_, spec_ind_, disp_ind, scat_factor = ES.draw_event_parameters()
     # Create event class with those parameters 
-    E = Event(t_ref, FREQ_REF, dm, 10e-4*fluence, 
+    E = Event(t_ref, FREQ_REF, dm, fluence, 
               width, spec_ind, disp_ind, scat_tau_ref)
 
     E.add_to_data(delta_t, freq, data, scintillate=scintillate)
