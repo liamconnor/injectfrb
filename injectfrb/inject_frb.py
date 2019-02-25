@@ -152,6 +152,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             break             
 
         if gaussian_noise is True:
+            print("Using Gaussian background noise")
             offset = 0
             NTIME = chunksize
             data_event = None
@@ -175,7 +176,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         params.append(offset)
 
         print("%d/%d Injecting with DM:%d width_samp: %.3f offset: %d" % 
-                                (ii, N_FRB, dm_, params[2]/dt, offset))
+                                (ii+1, N_FRB, dm_, params[2]/dt, offset))
 
 #        data_event[data_event>255] = 255
 #        data_event = data_event.astype(np.uint8)
