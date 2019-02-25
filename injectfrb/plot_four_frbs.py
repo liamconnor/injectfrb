@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 This script will simulate four different FRBs
 with the parameters of four different surveys. 

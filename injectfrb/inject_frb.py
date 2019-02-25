@@ -1,4 +1,4 @@
-#!/usr/bin/env/ python
+#!/usr/bin/env python
 
 import time
 
@@ -21,7 +21,7 @@ import reader
 import tools
 
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
-                                  fn_fil_out, N_FRB, chunksize=25000):
+                                  fn_fil_out, N_FRB, chunksize=2**11):
     NFREQ = header['nchans']
     print("============ HEADER INFORMATION ============")
     print(header)
