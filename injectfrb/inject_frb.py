@@ -21,8 +21,10 @@ import reader
 import tools
 
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
-                                  fn_fil_out, N_FRB, chunksize=100000):
+                                  fn_fil_out, N_FRB, chunksize=25000):
     NFREQ = header['nchans']
+    print("============ HEADER INFORMATION ============")
+    print(header)
 
     for ii in range(N_FRB):
         if ii==0:
@@ -126,6 +128,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         exit()
 
     print("============ HEADER INFORMATION ============")
+    print(header)
     kk = 0
     for ii in xrange(N_FRB):
         dm = np.random.uniform(10., 2000.)

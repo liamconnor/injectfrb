@@ -6,14 +6,8 @@ import glob
 N_FRB = 500
 SNR_MIN = 7
 backend = 'PRESTO'
-AMBER_PATH = '~/test/amber_arg.sh'
 
-outdir = '/data/03/Triggers/injection/%s' % time.strftime("%Y%m%d")
-outdir = '/data2/output/snr_tests_liam/%s' % time.strftime("%Y%m%d")
-infile = '/data/03/Triggers/injection/sky_data_nofrb.fil'
-infile = '/data2/output/snr_tests_liam/CB21.fil'
-infile = '/data2/output/snr_tests_liam/backgrounddata_CB00.fil'
-infile = '/data2/output/dm_time_generation/CB21.fil'
+infile = '/data1/output/snr_tests_liam/backgrounddata_CB00.fil'
 
 #infile = '/data2/output/20190121/2019-01-21-10:14:45.B1933+16/filterbank/CB24.fil'
 
