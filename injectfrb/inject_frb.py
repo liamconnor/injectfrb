@@ -309,15 +309,13 @@ if __name__=='__main__':
     
     parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
 
-    parser.add_option('--gaussian', dest='gaussian', action='store_false',
+    parser.add_option('--gaussian', dest='gaussian', action='store_true',
                         help="write only Gaussian data to fil files", default=False)
-
-    print(options.gaussian)
 
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_fil_out = args[1]
-
+    print(options.gaussian)
     if options.dm_low is None:
         if options.dm_high is None:
             dm = 500.
