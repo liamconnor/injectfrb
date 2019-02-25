@@ -237,8 +237,6 @@ def shuffle_array(data_1, data_2=None):
 
 	return data_1_[:, :-1], data_2
 
-
-
-
-
-
+def print_filheader(header):
+        for key in header.keys():
+                print("%s: %s" % (key, header[key]))

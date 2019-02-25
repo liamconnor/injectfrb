@@ -5,7 +5,7 @@ import time
 
 import glob
 
-N_FRB = 500
+N_FRB = 25
 SNR_MIN = 7
 backend = 'PRESTO'
 
@@ -16,4 +16,5 @@ if not os.path.isdir(outdir):
     os.mkdir(outdir)
 
 timestr = time.strftime("%Y%m%d-%H%M")
-os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 --calc_snr True --gaussian' % (infile, outdir, N_FRB))
+os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 --calc_snr True --gaussian_noise' \
+          % (infile, outdir, N_FRB))

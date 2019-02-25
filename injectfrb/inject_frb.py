@@ -24,8 +24,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
                                   fn_fil_out, N_FRB, chunksize=2**11):
     NFREQ = header['nchans']
     print("============ HEADER INFORMATION ============")
-    print(header)
-
+    reader.print_filheader(header)
     for ii in range(N_FRB):
         if ii==0:
             fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
@@ -128,7 +127,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         exit()
 
     print("============ HEADER INFORMATION ============")
-    print(header)
+    reader.print_filheader(header)
     kk = 0
     for ii in xrange(N_FRB):
         dm = np.random.uniform(10., 2000.)
@@ -159,7 +158,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             print("Using Gaussian background noise")
             offset = 0
             NTIME = chunksize
-            data_event = None
+            data_event = np.random.normal(100, 1, NTIME*NFREQ)
+            data_event = data_event.reshape(NFREQ, NTIME)
             flu = 50.0
             dm = 100.0 + ii*10.
         else:
