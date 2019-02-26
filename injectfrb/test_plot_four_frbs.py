@@ -16,7 +16,7 @@ def plot_four_frbs():
     cmap = 'Greys'
 
     print("\nGenerating Apertif-like FRB with blue spectrum")
-    NTIME = 2**13
+    NTIME = 2**12
     NFREQ = 1536
     dt = 0.000081
     upchan_factor = 2
@@ -26,15 +26,16 @@ def plot_four_frbs():
     dm = 500.
 
     # simulate FRB with Apertif-like observing parameters with no background noise
-    data_apertif, p = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, NTIME=NTIME, sim=True, fluence=1., 
+    data_apertif, p = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
+                            NTIME=upsamp_factor*NTIME, sim=True, fluence=1., 
                             spec_ind=4., width=5*dt, dm=dm, 
-                            background_noise=np.zeros([NFREQ, NTIME]), 
+                            background_noise=np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME]), 
                             delta_t=dt/upsamp_factor, plot_burst=False, 
                             freq=(freq[0],freq[-1]), FREQ_REF=freq_ref,
                             scintillate=False, scat_tau_ref=0.0)
 
     # downsample in time/freq
-    data_apertif = data_apertif.reshape(-1, upchan_factor, NTIME//upsamp_factor, upsamp_factor)
+    data_apertif = data_apertif.reshape(-1, upchan_factor, NTIME, upsamp_factor)
     data_apertif = data_apertif.mean(1).mean(-1)
 
     ext = [0, NTIME*dt, freq[-1], freq[0]]
@@ -46,7 +47,7 @@ def plot_four_frbs():
 
 
     print("\nGenerating CHIME-like FRB with scattering")
-    NTIME = 2**12
+    NTIME = 2**11
     NFREQ = 16384
     dt = 0.000983
     upchan_factor = 2
@@ -56,16 +57,16 @@ def plot_four_frbs():
     dm = 100.
 
     # simulate FRB with CHIME-like observing parameters with no background noise
-    data_chime, p = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
-                            NTIME=NTIME, sim=True, fluence=1., 
+    data_chime, p = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
+                            NTIME=upsamp_factor*NTIME, sim=True, fluence=1., 
                             spec_ind=-3., width=2*dt, dm=dm, 
-                            background_noise=np.zeros([NFREQ, NTIME]), 
+                            background_noise=np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME]), 
                             delta_t=dt/upsamp_factor, plot_burst=False, 
                             freq=(freq[0],freq[-1]), FREQ_REF=freq_ref, 
                             scintillate=False, scat_tau_ref=0.025)
 
     # downsample in time/freq
-    data_chime = data_chime.reshape(-1, upchan_factor, NTIME//upsamp_factor, upsamp_factor)
+    data_chime = data_chime.reshape(-1, upchan_factor, NTIME, upsamp_factor)
     data_chime = data_chime.mean(1).mean(-1)
 
     ext = [0, NTIME*dt, freq[-1], freq[0]]
@@ -85,8 +86,9 @@ def plot_four_frbs():
     dm = 1000.
 
     # simulate FRB with Breakthrough-listen-like observing parameters with Gaussian noise
-    data_noise_breakthrough, p = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, NTIME=NTIME, 
-                            sim=True, fluence=50000., 
+    data_noise_breakthrough, p = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
+                            NTIME=upsamp_factor*NTIME,
+                            sim=True, fluence=20000., 
                             spec_ind=4., width=dt/upsamp_factor, dm=500., 
                             background_noise=None,
                             delta_t=dt, plot_burst=False, 
@@ -95,7 +97,7 @@ def plot_four_frbs():
 
     # downsample in time/freq
     data_noise_breakthrough = data_noise_breakthrough.reshape(-1, upchan_factor, \
-                                    NTIME//upsamp_factor, upsamp_factor)
+                                    NTIME, upsamp_factor)
     data_noise_breakthrough = data_noise_breakthrough.mean(1).mean(-1)
 
     plt.subplot(223)
@@ -107,7 +109,7 @@ def plot_four_frbs():
     plt.xlabel('Time [sec]')
 
     print("\nGenerating Parkes-like FRB with Gaussian noise\n")
-    NTIME = 2**16
+    NTIME = 2**15
     NFREQ = 2048
     dt = 0.000064
     upchan_factor = 2
@@ -117,8 +119,9 @@ def plot_four_frbs():
     dm = 2000.
 
     # simulate FRB with Breakthrough-listen-like observing parameters with Gaussian noise
-    data_noise_dm2000, p = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, NTIME=NTIME, 
-                            sim=True, fluence=2000000., 
+    data_noise_dm2000, p = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
+                            NTIME=upsamp_factor*NTIME,
+                            sim=True, fluence=1000000., 
                             spec_ind=4., width=50*dt, dm=dm, 
                             background_noise=None,
                             delta_t=dt/upsamp_factor, plot_burst=False, 
@@ -127,7 +130,7 @@ def plot_four_frbs():
 
     # downsample in time/freq
     data_noise_dm2000 = data_noise_dm2000.reshape(-1, upchan_factor, \
-                                    NTIME//upsamp_factor, upsamp_factor)
+                                    NTIME, upsamp_factor)
     data_noise_dm2000 = data_noise_dm2000.mean(1).mean(-1)
 
     plt.subplot(224)
