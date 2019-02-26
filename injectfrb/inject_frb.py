@@ -126,6 +126,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         inject_in_filterbank_gaussian(data_fil_obj_skel, header, fn_fil_out, N_FRB)
         exit()
 
+    upchan_factor = 2
+    upsamp_factor = 2    
+        
     print("============ HEADER INFORMATION ============")
     reader.print_filheader(header)
     kk = 0
@@ -168,15 +171,18 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             flu = np.random.uniform(1, 1000)**(-2/3.)
             flu *= 1000**(2/3.+1) + 0.75*dm
 
-        data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
-                                               NTIME=NTIME, sim=True, 
+        data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
+                                               NTIME=upsamp_factor*NTIME, sim=True, 
                                                fluence=flu, spec_ind=0, width=10*delta_t,
                                                dm=dm, scat_tau_ref=0.0, 
                                                background_noise=data_event, 
-                                               delta_t=delta_t, plot_burst=False, 
+                                               delta_t=delta_t/upsamp_factor, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
                                                FREQ_REF=freq_ref, scintillate=False)
-
+        
+        
+        data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
+        
         dm_ = params[0]
         params.append(offset)
 
