@@ -134,9 +134,14 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         dm = np.random.uniform(10., 2000.)
 
         np.random.seed(np.random.randint(12312312))
-        # drop FRB in random location in data chunk
-        offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
-        data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
+        if gaussian_noise is True:
+            offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
+            data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
+                                                                      start=0, stop=1)
+        else:
+            # drop FRB in random location in data chunk
+            offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
+            data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
                                                                       start=start+chunksize*(ii-kk), stop=chunksize)
 
         if ii==0:
