@@ -135,6 +135,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         np.random.seed(np.random.randint(12312312))
         if gaussian_noise is True:
+            NTIME = chunksize
             offset = 0#random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
             data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
                                                                       start=0, stop=1)
@@ -163,8 +164,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         if gaussian_noise is True:
             print("Using Gaussian background noise")
-            offset = 0
-            NTIME = chunksize
             data_event = np.random.normal(100, 5, upchan_factor*NFREQ*upsamp_factor*NTIME)
             data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             flu = np.random.uniform(1, 1000)**(-2/3.)
