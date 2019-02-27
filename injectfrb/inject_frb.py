@@ -45,10 +45,11 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
-                         dm=1000.0, freq=(1550, 1250), dt=0.00004096,
+                         dm=1000.0, freq=(1550, 1250), dt=0.00008192,
                          chunksize=50000, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
-                         gaussian=False, gaussian_noise=True):
+                         gaussian=False, gaussian_noise=True,
+                         upchan_factor=2, upsamp_factor = 2):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
 
@@ -125,9 +126,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         fn_fil_out = fn_fil_out.strip('.fil') + '_gaussian.fil'
         inject_in_filterbank_gaussian(data_fil_obj_skel, header, fn_fil_out, N_FRB)
         exit()
-
-    upchan_factor = 2
-    upsamp_factor = 2    
         
     print("============ HEADER INFORMATION ============")
     reader.print_filheader(header)
@@ -161,8 +159,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             print("Using Gaussian background noise")
             offset = 0
             NTIME = chunksize
-            data_event = np.random.normal(100, 5, NTIME*NFREQ)
-            data_event = data_event.reshape(NFREQ, NTIME)
+            data_event = np.random.normal(100, 5, upchan_factor*upsamp_factor*NTIME*NFREQ)
+            data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             flu = np.random.uniform(1, 1000)**(-2/3.)
             flu *= 1000**(2/3.+1) + 0.75*dm
             dm = 100.0 + ii*50.
