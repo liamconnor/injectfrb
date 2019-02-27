@@ -135,7 +135,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         np.random.seed(np.random.randint(12312312))
         if gaussian_noise is True:
-            offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
+            offset = 0#random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
             data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
                                                                       start=0, stop=1)
             data = np.empty([NFREQ, NTIME])
