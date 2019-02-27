@@ -33,7 +33,7 @@ if __name__=='__main__':
                       usage="%prog FN_FILTERBANK OUTDIR [OPTIONS]", \
                       description="Inject FRBs into gaussian filterbank data")
 
-  parser.add_option('--fnfil', dest='fnfil', default='',\
+  parser.add_option('--fnfil', dest='fnfil', default='./data/test.fil',\
                       help="input filterbank file", 
                     type=str)
 
