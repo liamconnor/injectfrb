@@ -35,7 +35,7 @@ if __name__=='__main__':
 
   parser.add_option('--fnfil', dest='fnfil', default='',\
                       help="input filterbank file", 
-                    type='float')
+                    type=str)
 
   parser.add_option('--nfrb', dest='nfrb', type='int', \
                       help="Number of FRBs to inject.", \
