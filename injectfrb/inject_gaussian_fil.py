@@ -31,14 +31,14 @@ if __name__=='__main__':
   parser = optparse.OptionParser(prog="inject_frb.py", \
                       version="", \
                       usage="%prog FN_FILTERBANK OUTDIR [OPTIONS]", \
-                      description="Inject FRBs into filterbank data")
+                      description="Inject FRBs into gaussian filterbank data")
 
-  parser.add_option('--fnfil', dest='fnfil', default=None,\
+  parser.add_option('--fnfil', dest='fnfil', default='',\
                       help="input filterbank file", 
                     type='float')
 
   parser.add_option('--nfrb', dest='nfrb', type='int', \
-                      help="Number of FRBs to inject(Default: 50).", \
+                      help="Number of FRBs to inject.", \
                       default=1)
 
   parser.add_option('--outdir', dest='outdir', default='data/',\
