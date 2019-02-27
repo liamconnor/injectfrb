@@ -32,7 +32,7 @@ newhdr += sigproc.addto_hdr("HEADER_START", None)
 for k,v in filhdr.items():
     newhdr += sigproc.addto_hdr(k, v)
 newhdr += sigproc.addto_hdr("HEADER_END", None)
-print "Writing new header to '%s'"%sys.argv[1]
+print "Writing new header to '%s'" % fnfil
 outfile = open(fnfil, 'wb')
 outfile.write(newhdr)
 
