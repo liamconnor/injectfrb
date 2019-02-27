@@ -5,6 +5,7 @@ import os
 import time
 
 import numpy as np
+import optparse
 
 filhdr = {'telescope_id': 10,
       'az_start': 0.0,
