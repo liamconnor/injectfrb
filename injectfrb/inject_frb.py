@@ -165,6 +165,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             print("Using Gaussian background noise")
             offset = 0
             NTIME = chunksize
+            data_event = np.random.normal(100, 5, upchan_factor*NFREQ*upsamp_factor*NTIME)
             data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             flu = np.random.uniform(1, 1000)**(-2/3.)
             flu *= 1000**(2/3.+1) + 0.75*dm
