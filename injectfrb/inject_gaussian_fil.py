@@ -27,22 +27,24 @@ filhdr = {'telescope_id': 10,
 
 if __name__=='__main__':
 
-    parser = optparse.OptionParser(prog="inject_frb.py", \
-                        version="", \
-                        usage="%prog FN_FILTERBANK OUTDIR [OPTIONS]", \
-                        description="Inject FRBs into filterbank data")
+  parser = optparse.OptionParser(prog="inject_frb.py", \
+                      version="", \
+                      usage="%prog FN_FILTERBANK OUTDIR [OPTIONS]", \
+                      description="Inject FRBs into filterbank data")
 
-    parser.add_option('--fnfil', dest='fnfil', default=None,\
-                        help="input filterbank file", 
-                      type='float')
+  parser.add_option('--fnfil', dest='fnfil', default=None,\
+                      help="input filterbank file", 
+                    type='float')
 
-    parser.add_option('--nfrb', dest='nfrb', type='int', \
-                        help="Number of FRBs to inject(Default: 50).", \
-                        default=1)
+  parser.add_option('--nfrb', dest='nfrb', type='int', \
+                      help="Number of FRBs to inject(Default: 50).", \
+                      default=1)
 
-    parser.add_option('--outdir', dest='outdir', default='data/',\
-                        help="directory to output .fil")
-    
+  parser.add_option('--outdir', dest='outdir', default='data/',\
+                      help="directory to output .fil")
+
+  options, args = parser.parse_args()
+
   fnfil = options.fnfil
 
   try:
