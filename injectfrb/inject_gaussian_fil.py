@@ -21,7 +21,7 @@ filhdr = {'telescope_id': 10,
       'nbeams': 1,
       'fch1': 1549.8046875,
       'za_start': 0.0,
-      'rawdatafile': fnfil,
+      'rawdatafile': '',
       'nifs': 1,
       'nsamples': 7204148}
 
@@ -46,6 +46,8 @@ if __name__=='__main__':
   options, args = parser.parse_args()
 
   fnfil = options.fnfil
+
+  filhdr['rawdatafile'] = fnfil
 
   try:
       import sigproc
