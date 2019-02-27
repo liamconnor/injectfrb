@@ -90,6 +90,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     None 
     """
     SNRTools = tools.SNR_Tools()
+    print(fn_fil)
     data_fil_obj_skel, freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)
 
     if type(dm) is not tuple:
@@ -137,6 +138,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if gaussian_noise is True:
             NTIME = chunksize
             offset = 0#random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
+            print(fn_fil)
             data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
                                                                       start=0, stop=1)
             data = np.empty([NFREQ, NTIME])

@@ -4,9 +4,11 @@ import sys
 import os
 import time
 
+import numpy as np
+
 import sigproc
 
-fnfil = './test_new.fil'
+fnfil = sys.argv[1]
 
 filhdr = {'telescope_id': 10,
           'az_start': 0.0,
@@ -36,10 +38,14 @@ print "Writing new header to '%s'" % fnfil
 outfile = open(fnfil, 'wb')
 outfile.write(newhdr)
 
+spectrum = np.zeros([filhdr['nchans']], dtype=np.uint8)
+outfile.write(spectrum)
+outfile.close()
+
 N_FRB = 25
 SNR_MIN = 7
 
-outdir = './data/'
+outdir = 'data/'
 
 if not os.path.isdir(outdir):
     os.mkdir(outdir)
