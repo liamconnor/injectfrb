@@ -104,7 +104,8 @@ class Event(object):
     def scat_profile(self, nt, f, tau=1.):
         """ Include exponential scattering profile. 
         """
-        tau_nu = tau * (f / self._f_ref)**-4.
+#        tau_nu = tau * (f / self._f_ref)**-4.
+        tau_nu = tau * (f / 1000.)**-4.
         t = np.linspace(0., nt//2, nt)
 
         prof = 1 / tau_nu * np.exp(-t / tau_nu)
@@ -115,10 +116,12 @@ class Event(object):
         for final pulse shape at each frequency channel.
         """
         tau += 1e-18
+        tau_nu = tau * (f / 1000.)**-4.
         gaus_prof = self.gaussian_profile(nt, width, t0=t0)
         scat_prof = self.scat_profile(nt, f, tau) 
         pulse_prof = signal.fftconvolve(gaus_prof, scat_prof)[:nt]
-    
+        pulse_prof *= (width/(width + tau_nu))
+#        print(f, tau, width, width/(width+tau))
         return pulse_prof
 
     def add_to_data(self, delta_t, freq, data, scintillate=True):
@@ -162,7 +165,7 @@ class Event(object):
             pp = self.pulse_profile(NTIME, index_width, f, 
                                     tau=tau_pix, t0=tpix)
             val = pp.copy()
-            val /= (val.max()*stds)
+            #val /= (val.max()*stds)
             val *= self._fluence
             val /= (width_ / delta_t)
             val = val * (f / self._f_ref) ** self._spec_ind 
