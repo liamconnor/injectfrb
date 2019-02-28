@@ -92,7 +92,7 @@ class Event(object):
         rather than a boxcar.
         """
         t = np.linspace(-nt//2, nt//2, nt)
-        g = np.exp(-(t-t0)**2 / width**2)
+        g = np.exp(-(t-t0)**2 / (2*width**2))
 
         if not np.all(g > 0):
             g += 1e-18
