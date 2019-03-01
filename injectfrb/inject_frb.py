@@ -121,7 +121,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     ttot = int(N_FRB*chunksize*dt)
 
     timestr = time.strftime("%Y%m%d-%H%M")
-    fn_fil_out = '%s/dm%s_nfrb%d_%s_sec_%s.fil' % (fn_out_dir, dm, N_FRB, ttot, timestr)
+    fn_fil_out = '%s/%s_nfrb%d_%s_sec_%s.fil' % (fn_out_dir, simulator, N_FRB, ttot, timestr)
     fn_params_out = fn_fil_out.strip('.fil') + '.txt'
 
     f_params_out = open(fn_params_out, 'w+')
