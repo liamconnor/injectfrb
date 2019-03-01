@@ -212,7 +212,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
                                 (ii+1, N_FRB, dm_, params[2]/dt, offset, simulator))
 
-#        data_event[data_event>255] = 255
+        data_event[data_event>255] = 255
 #        data_event = data_event.astype(np.uint8)
         data[:, offset:offset+NTIME] = data_event
 #        np.save('d%d' % dm, data_event)
