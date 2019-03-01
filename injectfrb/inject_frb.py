@@ -102,6 +102,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     if simulator=='simpulse':
         import simpulse
 
+    print(paramslist)
     if paramslist is not None:
         params_arr = np.loadtxt(paramslist)
         print(params_arr.shape)
