@@ -196,7 +196,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         elif simulator=='simpulse':
             sp = simpulse.single_pulse(NTIME, NFREQ, freq_arr.min(), freq_arr.max(),
                            dm, scat_tau_ref, width_sec, fluence,
-                           spec_ind, undispersed_arrival_time)
+                           spec_ind, 0.)
 
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
 
