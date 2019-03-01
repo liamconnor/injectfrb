@@ -44,11 +44,26 @@ if __name__=='__main__':
   parser.add_option('--outdir', dest='outdir', default='data/',\
                       help="directory to output .fil")
 
+  parser.add_option('--upchan_factor', dest='upchan_factor', type='int', \
+                      help="Upchannelize data by this factor before injecting. Rebin after.", \
+                      default=2)
+
+  parser.add_option('--upsamp_factor', dest='upsamp_factor', type='int', \
+                      help="Upsample data by this factor before injecting. Downsample after.", \
+                      default=2)
+
+  parser.add_option('--simulator', dest='simulator', type='str', \
+                      help="Either Liam Connor's inject_frb or Kendrick Smith's simpulse", \
+                      default="injectfrb")
+
+
   options, args = parser.parse_args()
 
   fnfil = options.fnfil
 
   filhdr['rawdatafile'] = fnfil
+
+--upchan_factor 1 --upsamp_factor 1 --simulator simpulse
 
   try:
       import sigproc
@@ -77,6 +92,13 @@ if __name__=='__main__':
       os.mkdir(outdir)
 
   timestr = time.strftime("%Y%m%d-%H%M")
-  os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 --calc_snr True --gaussian_noise' \
-            % (fnfil, options.outdir, options.nfrb))
+  os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
+            --calc_snr True --gaussian_noise --upchan_factor %d --upsamp_factor %d --simulator %s' \
+            % (fnfil, options.outdir, options.nfrb,
+              options.upsamp_factor, options.upchan_factor, 
+              options.simulator))
+
+
+
+  
 
