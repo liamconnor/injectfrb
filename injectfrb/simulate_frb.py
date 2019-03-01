@@ -279,8 +279,24 @@ class EventSimulator():
 
         return dm, fluence, width, spec_ind, disp_ind
 
-def uniform_range(min_, max_):
-    return random.uniform(min_, max_)
+    def draw_event_parameters_array(self, fluence_min=1, dm_min=10., dm_max=2000., nfrb=1, 
+                                    spec_ind_min=0., spec_ind_max=0., width_mean=.001, 
+                                    width_sig=1, fnout=None):
+        dm = np.random.uniform(dm_min, dm_max, nfrb)
+        fluence = fluence_min*np.random.uniform(0, 1, nfrb)**(-2/3.)
+        spec_ind = np.random.uniform(spec_ind_min, spec_ind_max, nfrb)
+        disp_ind = 2.*np.ones([nfrb])
+        width = np.random.lognormal(np.log(width_mean), np.log(width_sig), nfrb)
+
+        if fnout!=None:
+            params_arr = np.concatenate([dm, fluence, width, spec_ind, disp_ind])
+            params_arr.shape = (5, nfrb)
+            np.savetxt(fnout, params_arr)
+
+        return dm, fluence, width, spec_ind, disp_ind
+
+def uniform_range(min_, max_, n=1):
+    return random.uniform(min_, max_, n)
 
 
 def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
