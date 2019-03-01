@@ -171,21 +171,21 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if gaussian_noise is True:
             data_event = np.random.normal(100, 5, upchan_factor*NFREQ*upsamp_factor*NTIME)
             data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
-            flu = np.random.uniform(1, 1000)**(-2/3.)
-            flu *= 1000**(2/3.+1) + 0.75*dm
+            fluence = np.random.uniform(1, 1000)**(-2/3.)
+            fluence *= 1000**(2/3.+1) + 0.75*dm
             dm = 100.0 + ii*50.
             scat_tau_ref = 0.
             spec_ind = 0.
             width_sec = 10*delta_t
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
-            flu = np.random.uniform(1, 1000)**(-2/3.)
-            flu *= 1000**(2/3.+1) + 0.75*dm
+            fluence = np.random.uniform(1, 1000)**(-2/3.)
+            fluence *= 1000**(2/3.+1) + 0.75*dm
 
         if simulator=='injectfrb':
             data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
                                                NTIME=upsamp_factor*NTIME, sim=True, 
-                                               fluence=flu, spec_ind=spec_ind, width=width_sec,
+                                               fluence=fluence, spec_ind=spec_ind, width=width_sec,
                                                dm=dm, scat_tau_ref=scat_tau_ref, 
                                                background_noise=data_event, 
                                                delta_t=delta_t/upsamp_factor, plot_burst=False, 
