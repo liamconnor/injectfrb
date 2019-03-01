@@ -196,7 +196,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
 
         elif simulator=='simpulse':
-            fluence /= 1000.
+            fluence /= 50000.
             sp = simpulse.single_pulse(NTIME, NFREQ, freq_arr.min(), freq_arr.max(),
                            dm, scat_tau_ref, width_sec, fluence,
                            spec_ind, 0.)
