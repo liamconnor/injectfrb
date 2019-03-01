@@ -94,11 +94,11 @@ if __name__=='__main__':
   timestr = time.strftime("%Y%m%d-%H%M")
   os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
             --calc_snr True --gaussian_noise --upchan_factor %d --upsamp_factor %d --simulator %s' \
-            % (fnfil, options.outdir, options.nfrb,
-              options.upsamp_factor, options.upchan_factor, 
+            % (fnfil, options.outdir, options.nfrb, \
+              options.upsamp_factor, options.upchan_factor, \
               options.simulator))
 
 
 
-  
+
 
