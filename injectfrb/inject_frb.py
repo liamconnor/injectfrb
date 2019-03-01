@@ -189,6 +189,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                 data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             else:
                 data_event = np.random.normal(100, 5, NFREQ*NTIME)
+                data_event = data_event.reshape(NFREQ, NTIME)
 
             fluence = np.random.uniform(1, 1000)**(-2/3.)
             fluence *= 1000**(2/3.+1) + 0.75*dm
