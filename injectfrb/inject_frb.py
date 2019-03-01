@@ -46,7 +46,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=1000.0, freq=(1550, 1250), dt=0.00008192,
-                         chunksize=50000, calc_snr=True, start=0, 
+                         chunksize=25000, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, simulator='injectfrb'):
@@ -199,7 +199,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
 
-        
+            # [dm, fluence, width, spec_ind, disp_ind, scat_tau_ref]
+            params = [dm, fluence, width_sec, spec_ind, 2., scat_tau_ref]
 
         dm_ = params[0]
         params.append(offset)
@@ -322,6 +323,14 @@ if __name__=='__main__':
     parser.add_option('--gaussian_noise', dest='gaussian_noise', action='store_true',
                         help="use Gaussian background noise", default=False)
 
+    parser.add_option('--upchan_factor', dest='upchan_factor', type='int', \
+                        help="Upchannelize data by this factor before injecting. Rebin after.", \
+                        default=2)
+
+    parser.add_option('--upsamp_factor', dest='upsamp_factor', type='int', \
+                        help="Upsample data by this factor before injecting. Downsample after.", \
+                        default=2)
+
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_fil_out = args[1]
@@ -342,7 +351,9 @@ if __name__=='__main__':
                                 calc_snr=options.calc_snr, start=0,
                                 dm=float(options.dm_list[0]), 
                                 gaussian=options.gaussian, 
-                                gaussian_noise=options.gaussian_noise)
+                                gaussian_noise=options.gaussian_noise,
+                                upsamp_factor=options.upsamp_factor,
+                                upchan_factor=options.upchan_factor)
 
         exit()
 
@@ -354,5 +365,7 @@ if __name__=='__main__':
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
                                                         calc_snr=options.calc_snr, start=0,
                                                         dm=float(x), gaussian=options.gaussian, 
-                                                        gaussian_noise=options.gaussian_noise) for x in options.dm_list)
+                                                        gaussian_noise=options.gaussian_noise,
+                                                        upsamp_factor=options.upsamp_factor,
+                                                        upchan_factor=options.upchan_factor)) for x in options.dm_list)
 
