@@ -89,6 +89,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     --------
     None 
     """
+    assert simulator in ['simpulse', 'injectfrb'], "Do not recognize simulator backend"
+
     if simulator=='simpulse':
         import simpulse
 
@@ -201,6 +203,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
             # [dm, fluence, width, spec_ind, disp_ind, scat_tau_ref]
             params = [dm, fluence, width_sec, spec_ind, 2., scat_tau_ref]
+
 
         dm_ = params[0]
         params.append(offset)
@@ -333,7 +336,7 @@ if __name__=='__main__':
 
     parser.add_option('--simulator', dest='simulator', type='str', \
                         help="Either Liam Connor's inject_frb or Kendrick Smith's simpulse", \
-                        default="inject_frb")
+                        default="injectfrb")
 
 
     options, args = parser.parse_args()
