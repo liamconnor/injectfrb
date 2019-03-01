@@ -102,8 +102,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     if simulator=='simpulse':
         import simpulse
 
-    if paramslist != None:
+    if paramslist is not None:
         params_arr = np.loadtxt(paramslist)
+        print(params_arr.shape)
     else:
         params_arr = None
 
@@ -191,8 +192,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             scat_tau_ref = 0.
             spec_ind = 0.
             width_sec = 2*delta_t
-            if params_arr != None:
-                print(params_arr.shape)
+            if params_arr is not None:
                 dm, fluence, width_sec, spec_ind, disp_ind = params_arr[0,ii],params_arr[1,ii],params_arr[2,ii],params_arr[3,ii],params_arr[4,ii]
                 fluence *= 1000.
         else:
