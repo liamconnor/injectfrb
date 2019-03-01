@@ -49,7 +49,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                          chunksize=50000, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
-                         upchan_factor=2, upsamp_factor = 2):
+                         upchan_factor=2, upsamp_factor=2, simulator='injectfrb'):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
 
@@ -89,6 +89,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     --------
     None 
     """
+    if simulator=='simpulse':
+        import simpulse
+
     SNRTools = tools.SNR_Tools()
 
     data_fil_obj_skel, freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)
@@ -169,29 +172,40 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             flu = np.random.uniform(1, 1000)**(-2/3.)
             flu *= 1000**(2/3.+1) + 0.75*dm
             dm = 100.0 + ii*50.
+            scat_tau_ref = 0.
+            spec_ind = 0.
+            width_sec = 10*delta_t
             print("Using Gaussian background noise with shape:", data_event.shape)
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
             flu = np.random.uniform(1, 1000)**(-2/3.)
             flu *= 1000**(2/3.+1) + 0.75*dm
 
-        data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
+        if simulator=='injectfrb':
+            data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
                                                NTIME=upsamp_factor*NTIME, sim=True, 
-                                               fluence=flu, spec_ind=0, width=10*delta_t,
-                                               dm=dm, scat_tau_ref=0.0, 
+                                               fluence=flu, spec_ind=spec_ind, width=width_sec,
+                                               dm=dm, scat_tau_ref=scat_tau_ref, 
                                                background_noise=data_event, 
                                                delta_t=delta_t/upsamp_factor, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
                                                FREQ_REF=freq_ref, scintillate=False)
+            data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
+
+        elif simulator=='simpulse':
+            sp = simpulse.single_pulse(NTIME, NFREQ, freq_arr.min(), freq_arr.max(),
+                           dm, scat_tau_ref, width_sec, fluence,
+                           spec_ind, undispersed_arrival_time)
+
+            sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
+
         
-        
-        data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
-        
+
         dm_ = params[0]
         params.append(offset)
-
-        print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d" % 
-                                (ii+1, N_FRB, dm_, params[2]/dt, offset))
+        print(params)
+        print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
+                                (ii+1, N_FRB, dm_, params[2]/dt, offset, simulator))
 
 #        data_event[data_event>255] = 255
 #        data_event = data_event.astype(np.uint8)
