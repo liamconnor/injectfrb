@@ -104,6 +104,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     if paramslist != None:
         params_arr = np.loadtxt(paramslist)
+    else:
+        params_arr = None
 
     SNRTools = tools.SNR_Tools()
 
@@ -189,9 +191,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             scat_tau_ref = 0.
             spec_ind = 0.
             width_sec = 2*delta_t
-            print(params_arr.shape)
-            dm, fluence, width_sec, spec_ind, disp_ind = params_arr[0,ii],params_arr[1,ii],params_arr[2,ii],params_arr[3,ii],params_arr[4,ii]
-            fluence *= 1000.
+            if params_arr != None:
+                print(params_arr.shape)
+                dm, fluence, width_sec, spec_ind, disp_ind = params_arr[0,ii],params_arr[1,ii],params_arr[2,ii],params_arr[3,ii],params_arr[4,ii]
+                fluence *= 1000.
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
             fluence = np.random.uniform(1, 1000)**(-2/3.)
