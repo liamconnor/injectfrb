@@ -200,6 +200,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                            spec_ind, 0.)
 
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
+            data_event = data_event[::-1]
 
             # [dm, fluence, width, spec_ind, disp_ind, scat_tau_ref]
             params = [dm, fluence, width_sec, spec_ind, 2., scat_tau_ref]
