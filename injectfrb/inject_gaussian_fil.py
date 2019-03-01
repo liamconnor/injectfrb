@@ -7,6 +7,8 @@ import time
 import numpy as np
 import optparse
 
+import simulate_frb
+
 filhdr = {'telescope_id': 10,
       'az_start': 0.0,
       'nbits': 8,
@@ -56,6 +58,14 @@ if __name__=='__main__':
                       help="Either Liam Connor's inject_frb or Kendrick Smith's simpulse", \
                       default="injectfrb")
 
+  parser.add_option('--dm_low', dest='dm_low', default=10.,\
+                      help="min dm to use, either float or tuple", 
+                    type='float')
+
+  parser.add_option('--dm_high', dest='dm_high', default=2000.,\
+                    help="max dms to use, either float or tuple", 
+                    type='float')
+
 
   options, args = parser.parse_args()
 
@@ -85,6 +95,11 @@ if __name__=='__main__':
     exit()
 
   outdir = 'data/'
+
+  ES = simulate_frb.EventSimulator()
+  ES.draw_event_parameters_array(fluence_min=1, dm_min=options.dm_min, dm_max=options.dm_max, 
+                                 nfrb=options.nfrb, spec_ind_min=0., spec_ind_max=0., width_mean=.001, 
+                                 width_sig=1, fnout='./test.txt')
 
   if not os.path.isdir(outdir):
       os.mkdir(outdir)
