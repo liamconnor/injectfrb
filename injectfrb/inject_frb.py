@@ -173,7 +173,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             fluence = np.random.uniform(1, 1000)**(-2/3.)
             fluence *= 1000**(2/3.+1) + 0.75*dm
-            dm = 100.0 #+ ii*50.
+            fluence /= 10.
+            dm = np.random.uniform(10., 1000.)
             scat_tau_ref = 0.
             spec_ind = 0.
             width_sec = 2*delta_t
@@ -195,6 +196,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
 
         elif simulator=='simpulse':
+            fluence /= 1000.
             sp = simpulse.single_pulse(NTIME, NFREQ, freq_arr.min(), freq_arr.max(),
                            dm, scat_tau_ref, width_sec, fluence,
                            spec_ind, 0.)
