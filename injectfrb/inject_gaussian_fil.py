@@ -63,8 +63,6 @@ if __name__=='__main__':
 
   filhdr['rawdatafile'] = fnfil
 
---upchan_factor 1 --upsamp_factor 1 --simulator simpulse
-
   try:
       import sigproc
 
