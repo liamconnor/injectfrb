@@ -331,6 +331,11 @@ if __name__=='__main__':
                         help="Upsample data by this factor before injecting. Downsample after.", \
                         default=2)
 
+    parser.add_option('--simulator', dest='simulator', type='str', \
+                        help="Either Liam Connor's inject_frb or Kendrick Smith's simpulse", \
+                        default="inject_frb")
+
+
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_fil_out = args[1]
@@ -353,7 +358,8 @@ if __name__=='__main__':
                                 gaussian=options.gaussian, 
                                 gaussian_noise=options.gaussian_noise,
                                 upsamp_factor=options.upsamp_factor,
-                                upchan_factor=options.upchan_factor)
+                                upchan_factor=options.upchan_factor,
+                                simulator=options.simulator)
 
         exit()
 
@@ -367,5 +373,6 @@ if __name__=='__main__':
                                                         dm=float(x), gaussian=options.gaussian, 
                                                         gaussian_noise=options.gaussian_noise,
                                                         upsamp_factor=options.upsamp_factor,
-                                                        upchan_factor=options.upchan_factor)) for x in options.dm_list)
+                                                        upchan_factor=options.upchan_factor,
+                                                        simulator=options.simulator) for x in options.dm_list)
 
