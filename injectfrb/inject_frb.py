@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+""" To do:
+* calibrate fluence to S/N 
+* generate random FRB parameters before running, read from .txt file 
+* get arrival time without argmax!
+
+"""
+
 import time
 
 import random
@@ -49,7 +56,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                          chunksize=25000, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
-                         upchan_factor=2, upsamp_factor=2, simulator='injectfrb'):
+                         upchan_factor=2, upsamp_factor=2, 
+                         simulator='injectfrb', paramslist=None):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
 
@@ -93,6 +101,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     if simulator=='simpulse':
         import simpulse
+
+    if paramslist != None:
+        params_arr = np.loadtxt(paramslist)
 
     SNRTools = tools.SNR_Tools()
 
@@ -178,6 +189,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             scat_tau_ref = 0.
             spec_ind = 0.
             width_sec = 2*delta_t
+            print(params_arr.shape)
+            dm, fluence, width_sec, spec_ind, disp_ind = params_arr[0,ii],params_arr[1,ii],params_arr[2,ii],params_arr[3,ii],params_arr[4,ii]
+            fluence *= 1000.
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
             fluence = np.random.uniform(1, 1000)**(-2/3.)
@@ -341,6 +355,11 @@ if __name__=='__main__':
                         help="Either Liam Connor's inject_frb or Kendrick Smith's simpulse", \
                         default="injectfrb")
 
+    parser.add_option('--paramslist', dest='paramslist', type='str', \
+                        help="path to txt file containing FRB parameters", \
+                        default=None)
+
+
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -365,7 +384,8 @@ if __name__=='__main__':
                                 gaussian_noise=options.gaussian_noise,
                                 upsamp_factor=options.upsamp_factor,
                                 upchan_factor=options.upchan_factor,
-                                simulator=options.simulator)
+                                simulator=options.simulator,
+                                paramslist=options.paramslist)
 
         exit()
 
@@ -380,5 +400,6 @@ if __name__=='__main__':
                                                         gaussian_noise=options.gaussian_noise,
                                                         upsamp_factor=options.upsamp_factor,
                                                         upchan_factor=options.upchan_factor,
-                                                        simulator=options.simulator) for x in options.dm_list)
+                                                        simulator=options.simulator,
+                                                        paramslist=options.paramslist) for x in options.dm_list)
 
