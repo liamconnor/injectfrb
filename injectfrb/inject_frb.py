@@ -177,7 +177,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             scat_tau_ref = 0.
             spec_ind = 0.
             width_sec = 10*delta_t
-            print("Using Gaussian background noise with shape:", data_event.shape)
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
             flu = np.random.uniform(1, 1000)**(-2/3.)
@@ -207,7 +206,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         dm_ = params[0]
         params.append(offset)
-        print(params)
+
         print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
                                 (ii+1, N_FRB, dm_, params[2]/dt, offset, simulator))
 
