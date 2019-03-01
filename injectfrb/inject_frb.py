@@ -184,8 +184,12 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             break             
 
         if gaussian_noise is True:
-            data_event = np.random.normal(100, 5, upchan_factor*NFREQ*upsamp_factor*NTIME)
-            data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
+            if simulator=='injectfrb':
+                data_event = np.random.normal(100, 5, upchan_factor*NFREQ*upsamp_factor*NTIME)
+                data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
+            else:
+                data_event = np.random.normal(100, 5, NFREQ*NTIME)
+
             fluence = np.random.uniform(1, 1000)**(-2/3.)
             fluence *= 1000**(2/3.+1) + 0.75*dm
             fluence /= 10.
@@ -214,7 +218,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
 
         elif simulator=='simpulse':
-            fluence /= 50000.
             sp = simpulse.single_pulse(NTIME, NFREQ, freq_arr.min(), freq_arr.max(),
                            dm, scat_tau_ref, width_sec, fluence,
                            spec_ind, 0.)
