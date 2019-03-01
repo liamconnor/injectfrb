@@ -58,11 +58,11 @@ if __name__=='__main__':
                       help="Either Liam Connor's inject_frb or Kendrick Smith's simpulse", \
                       default="injectfrb")
 
-  parser.add_option('--dm_low', dest='dm_low', default=10.,\
+  parser.add_option('--dm_min', dest='dm_min', default=10.,\
                       help="min dm to use, either float or tuple", 
                     type='float')
 
-  parser.add_option('--dm_high', dest='dm_high', default=2000.,\
+  parser.add_option('--dm_max', dest='dm_max', default=2000.,\
                     help="max dms to use, either float or tuple", 
                     type='float')
 
@@ -106,10 +106,12 @@ if __name__=='__main__':
 
   timestr = time.strftime("%Y%m%d-%H%M")
   os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
-            --calc_snr True --gaussian_noise --upchan_factor %d --upsamp_factor %d --simulator %s' \
+            --calc_snr True --gaussian_noise --upchan_factor %d \
+            --upsamp_factor %d --simulator %s\
+            --dm_low %f --dm_high %f' \
             % (fnfil, options.outdir, options.nfrb, \
               options.upsamp_factor, options.upchan_factor, \
-              options.simulator))
+              options.simulator, options.dm_min, options.dm_max))
 
 
 
