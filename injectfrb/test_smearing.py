@@ -55,15 +55,14 @@ plt.subplot(121)
 plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), color='k')
 plt.plot(np.roll(data_simpulse[-100], pulse_nt//2-np.argmax(data_simpulse[-100])), color='C1')
 
-maxind = pulse_nt//2-np.argmax(data_simpulse[0]))
+maxind = pulse_nt//2-np.argmax(data_simpulse[0])
 plt.xlim(maxind-100, maxind+100)
-
 
 plt.subplot(122)
 plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='k')
 plt.plot(np.roll(data_injfrb[-100], pulse_nt//2-np.argmax(data_injfrb[-100])), color='C1')
 
-maxind = pulse_nt//2-np.argmax(data_injfrb[0]))
+maxind = pulse_nt//2-np.argmax(data_injfrb[0])
 plt.xlim(maxind-100, maxind+100)
 
 plt.show()
