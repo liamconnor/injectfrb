@@ -65,7 +65,7 @@ class Event(object):
         tdm = 8.3e-3 * dm * delta_freq / freq_c**3
         # these should in FWHM units, not a sigma 
         tdm /= 2.355
-        ts /= 2.355
+        tsamp /= 2.355
         tI = np.sqrt(ti**2 + tsamp**2 + tdm**2 + tau**2)
 
         return 1e-3*tI
