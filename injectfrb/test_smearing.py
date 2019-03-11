@@ -7,7 +7,7 @@ import simulate_frb
 dt = 0.001
 freq_lo_MHz = 1000.0
 freq_hi_MHz = 2000.0
-dm = 1000.0
+dm = 0.0
 sm = 0.0
 intrinsic_width = 0.0005
 fluence = 1.0
@@ -43,11 +43,11 @@ fig = plt.figure()
 plt.subplot(121)
 plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), color='k')
 plt.plot(np.roll(data_simpulse[-100], pulse_nt//2-np.argmax(data_simpulse[-100])), color='C1')
-plt.xlim(3080, 3130)
+plt.xlim(3080, 3140)
 
 plt.subplot(122)
 plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='k')
 plt.plot(np.roll(data_injfrb[-100], pulse_nt//2-np.argmax(data_injfrb[-100])), color='C1')
-plt.xlim(3080, 3130)
+plt.xlim(3080, 3140)
 
 plt.show()
