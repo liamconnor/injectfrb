@@ -149,9 +149,9 @@ class Event(object):
             # if data[ii].sum()==0:
             #     continue
 
-            # calculte dm-smeared and sampled 
+            # calculate dm-smeared and sampled 
             # pulse width for gaussian profile
-            width_ = self.calc_width(self._dm, self._f_ref*1e-3, 
+            width_ = self.calc_width(self._dm, f*1e-3,#self._f_ref*1e-3, 
                                             bw=bandwidth, NFREQ=NFREQ,
                                             ti=self._width, tsamp=delta_t, tau=0)
 
