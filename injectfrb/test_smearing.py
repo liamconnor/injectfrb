@@ -32,6 +32,7 @@ dedisp_delay = 4148*dm*(freq_lo_MHz**-2.-freq_hi_MHz**-2.)
 pulse_nt = int(2*dedisp_delay/dt + 1000)
 nfreq = 1024
 freq_ref = 1500.
+freq_arr = np.linspace(freq_lo_MHz, freq_hi_MHz, nfreq)
 
 sp = simpulse.single_pulse(pulse_nt, nfreq, freq_lo_MHz, freq_hi_MHz,
                            dm, sm, intrinsic_width, fluence,
@@ -58,15 +59,18 @@ fig = plt.figure()
 plt.subplot(121)
 plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), color='k')
 plt.plot(np.roll(data_simpulse[-100], pulse_nt//2-np.argmax(data_simpulse[-100])), color='C1')
+plt.legend(['simpulse %.1f MHz' % freq_arr[-100], 'simpulse %.1f MHz' % freq_arr[0]])
 
 maxind = pulse_nt//2
 plt.xlim(maxind-30, maxind+30)
+plt.xlabel('Time [ms]')
 
 plt.subplot(122)
 plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='k')
 plt.plot(np.roll(data_injfrb[-100], pulse_nt//2-np.argmax(data_injfrb[-100])), color='C1')
+plt.legend(['injectfrb %.1f MHz' % freq_arr[-100], 'injectfrb %.1f MHz' % freq_arr[0]])
 
 maxind = pulse_nt//2
 plt.xlim(maxind-30, maxind+30)
-
+plt.xlabel('Time [ms]')
 plt.show()
