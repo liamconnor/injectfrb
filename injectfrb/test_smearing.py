@@ -18,12 +18,12 @@ pulse_nt = int(2*dedisp_delay/dt)
 nfreq = 1024
 freq_ref = 1500.
 
-data_simpulse = simpulse.single_pulse(pulse_nt, nfreq, freq_lo_MHz, freq_hi_MHz,
+sp = simpulse.single_pulse(pulse_nt, nfreq, freq_lo_MHz, freq_hi_MHz,
                            dm, sm, intrinsic_width, fluence,
                            spectral_index, undispersed_arrival_time)
 
-data = np.zeros([nfreq, pulse_nt])
-data_simpulse.add_to_timestream(data, 0.0, pulse_nt*dt)
+data_simpulse = np.zeros([nfreq, pulse_nt])
+sp.add_to_timestream(data_simpulse, 0.0, pulse_nt*dt)
 
 data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim=True, fluence=1.0, 
     								 spec_ind=0.0, width=0.0001, dm=1000, 
