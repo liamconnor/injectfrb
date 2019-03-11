@@ -1,3 +1,14 @@
+""" simpulse.single_pulse and injectfrb.simulate_frb deal with 
+	temporal smearing slightly differently. simulate_frb calculates 
+	final width from dispersion smearing and sampling and then 
+	generates a Gaussian pulse with that width. single_pulse 
+	generates a Gaussian pulse with some intrinsic width and 
+	injects into upchannelized/upsampled data. 
+
+	this script is meant to test the difference between those 
+	two methods
+"""
+
 import numpy as np
 import matplotlib.pylab as plt
 
@@ -7,7 +18,7 @@ import simulate_frb
 dt = 0.001
 freq_lo_MHz = 1000.0
 freq_hi_MHz = 2000.0
-dm = 0.0
+dm = 1000.0
 sm = 0.0
 intrinsic_width = 0.0005
 fluence = 1.0
@@ -43,12 +54,16 @@ fig = plt.figure()
 plt.subplot(121)
 plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), color='k')
 plt.plot(np.roll(data_simpulse[-100], pulse_nt//2-np.argmax(data_simpulse[-100])), color='C1')
-#plt.xlim(3080, 3140)
+
+maxind = pulse_nt//2-np.argmax(data_simpulse[0]))
+plt.xlim(maxind-100, maxind+100)
 
 
 plt.subplot(122)
 plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='k')
 plt.plot(np.roll(data_injfrb[-100], pulse_nt//2-np.argmax(data_injfrb[-100])), color='C1')
-#plt.xlim(3080, 3140)
+
+maxind = pulse_nt//2-np.argmax(data_injfrb[0]))
+plt.xlim(maxind-100, maxind+100)
 
 plt.show()
