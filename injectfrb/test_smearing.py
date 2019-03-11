@@ -34,6 +34,9 @@ data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim
      	    						 scintillate=False, scat_tau_ref=0.0, 
      	    						 disp_ind=2.0)
 
+data_simpulse /= np.max(np.data_simpulse, axis=-1)
+data_injfrb /= np.max(np.data_injfrb, axis=-1)
+
 fig = plt.figure()
 
 plt.subplot(121)
