@@ -14,7 +14,7 @@ fluence = 1.0
 spectral_index = 0.
 undispersed_arrival_time = 0.10
 dedisp_delay = 4148*dm*(freq_lo_MHz**-2.-freq_hi_MHz**-2.)
-pulse_nt = int(2*dedisp_delay/dt)
+pulse_nt = int(2*dedisp_delay/dt + 1000)
 nfreq = 1024
 freq_ref = 1500.
 
