@@ -34,17 +34,19 @@ data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim
      	    						 scintillate=False, scat_tau_ref=0.0, 
      	    						 disp_ind=2.0)
 
-data_simpulse /= np.max(data_simpulse, axis=-1)[:, None]
-data_injfrb /= np.max(data_injfrb, axis=-1)[:, None]
+data_simpulse /= np.max(data_simpulse, axis=0)[None]
+data_injfrb /= np.max(data_injfrb, axis=0)[None]
 
 fig = plt.figure()
 
 plt.subplot(121)
-plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), '--', color='k')
+plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), color='k')
 plt.plot(np.roll(data_simpulse[-100], pulse_nt//2-np.argmax(data_simpulse[-100])), color='C1')
+plt.xlim(3000, 3200)
 
 plt.subplot(122)
-plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='C0')
+plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='k')
 plt.plot(np.roll(data_injfrb[-100], pulse_nt//2-np.argmax(data_injfrb[-100])), color='C1')
+plt.xlim(3000, 3200)
 
 plt.show()
