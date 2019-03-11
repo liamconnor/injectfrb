@@ -6,7 +6,11 @@
 	injects into upchannelized/upsampled data. 
 
 	this script is meant to test the difference between those 
-	two methods
+	two methods.
+
+	one issue with using a Gaussian with width=sqrt(tdm**2 + ts**2 + ti**2)
+	is that intra-channel dispersion smearing does not 
+	result in a Gaussian, it's something flatter.
 """
 
 import numpy as np
@@ -56,13 +60,13 @@ plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), col
 plt.plot(np.roll(data_simpulse[-100], pulse_nt//2-np.argmax(data_simpulse[-100])), color='C1')
 
 maxind = pulse_nt//2
-plt.xlim(maxind-100, maxind+100)
+plt.xlim(maxind-30, maxind+30)
 
 plt.subplot(122)
 plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='k')
 plt.plot(np.roll(data_injfrb[-100], pulse_nt//2-np.argmax(data_injfrb[-100])), color='C1')
 
 maxind = pulse_nt//2
-plt.xlim(maxind-100, maxind+100)
+plt.xlim(maxind-30, maxind+30)
 
 plt.show()
