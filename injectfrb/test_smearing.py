@@ -43,11 +43,11 @@ fig = plt.figure()
 plt.subplot(121)
 plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), color='k')
 plt.plot(np.roll(data_simpulse[-100], pulse_nt//2-np.argmax(data_simpulse[-100])), color='C1')
-plt.xlim(3000, 3200)
+plt.xlim(3080, 3130)
 
 plt.subplot(122)
 plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='k')
 plt.plot(np.roll(data_injfrb[-100], pulse_nt//2-np.argmax(data_injfrb[-100])), color='C1')
-plt.xlim(3000, 3200)
+plt.xlim(3080, 3130)
 
 plt.show()
