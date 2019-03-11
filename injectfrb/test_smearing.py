@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pylab as plt
 
 import simpulse
 import simulate_frb
