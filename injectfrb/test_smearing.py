@@ -24,7 +24,7 @@ data_simpulse = simpulse.single_pulse(pulse_nt, nfreq, freq_lo_MHz, freq_hi_MHz,
 data = np.zeros([nfreq, pulse_nt])
 data_simpulse.add_to_timestream(data, 0.0, pulse_nt*dt)
 
-data_injfrb, p = s.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim=True, fluence=1.0, 
+data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim=True, fluence=1.0, 
     								 spec_ind=0.0, width=0.0001, dm=1000, 
     								 background_noise=np.zeros([nfreq, pulse_nt]),
     								 delta_t=dt, plot_burst=False, 
