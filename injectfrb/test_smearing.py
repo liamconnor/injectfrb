@@ -7,9 +7,9 @@ import simulate_frb
 dt = 0.001
 freq_lo_MHz = 1000.0
 freq_hi_MHz = 2000.0
-dm = 250.0
+dm = 1000.0
 sm = 0.0
-intrinsic_width = 0.005
+intrinsic_width = 0.0005
 fluence = 1.0
 spectral_index = 0.
 undispersed_arrival_time = 0.10
@@ -36,9 +36,12 @@ data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim
 
 fig = plt.figure()
 
+plt.subplot(121)
 plt.plot(data_simpulse[0], '--', color='k')
-plt.plot(data_simpulse[-100], '--', color='k')
-plt.plot(data_simpulse[0], '.', color='C1')
-plt.plot(data_simpulse[-100], '--', color='C1')
+plt.plot(data_injfrb[0], color='C1')
+
+plt.subplot(122)
+plt.plot(data_simpulse[-100], '.', color='k')
+plt.plot(data_injfrb[-100], '--', color='C1')
 
 plt.show()
