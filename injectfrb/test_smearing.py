@@ -37,11 +37,11 @@ data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim
 fig = plt.figure()
 
 plt.subplot(121)
-plt.plot(np.roll(data_simpulse[0], nt//2-np.argmax(data_simpulse[0])), '--', color='k')
-plt.plot(np.roll(data_injfrb[0], nt//2-np.argmax(data_injfrb[0])), color='C1')
+plt.plot(np.roll(data_simpulse[0], pulse_nt//2-np.argmax(data_simpulse[0])), '--', color='k')
+plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='C1')
 
 plt.subplot(122)
-plt.plot(np.roll(data_simpulse[-100], nt//2-np.argmax(data_simpulse[-100])), color='k')
-plt.plot(np.roll(data_injfrb[0], nt//2-np.argmax(data_injfrb[0])), color='C1')
+plt.plot(np.roll(data_simpulse[-100], pulse_nt//2-np.argmax(data_simpulse[-100])), color='k')
+plt.plot(np.roll(data_injfrb[0], pulse_nt//2-np.argmax(data_injfrb[0])), color='C1')
 
 plt.show()
