@@ -26,7 +26,7 @@ data_simpulse = np.zeros([nfreq, pulse_nt])
 sp.add_to_timestream(data_simpulse, 0.0, pulse_nt*dt)
 
 data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim=True, fluence=1.0, 
-    								 spec_ind=0.0, width=0.0001, dm=1000, 
+    								 spec_ind=0.0, width=intrinsic_width, dm=dm, 
     								 background_noise=np.zeros([nfreq, pulse_nt]),
     								 delta_t=dt, plot_burst=False, 
     								 freq=(freq_hi_MHz, freq_lo_MHz), 
@@ -37,11 +37,11 @@ data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim
 fig = plt.figure()
 
 plt.subplot(121)
-plt.plot(data_simpulse[0], '--', color='k')
-plt.plot(data_injfrb[0], color='C1')
+plt.plot(np.roll(data_simpulse[0], nt//2-np.argmax(data_simpulse[0])), '--', color='k')
+plt.plot(np.roll(data_injfrb[0], nt//2-np.argmax(data_injfrb[0])), color='C1')
 
 plt.subplot(122)
-plt.plot(data_simpulse[-100], '.', color='k')
-plt.plot(data_injfrb[-100], '--', color='C1')
+plt.plot(np.roll(data_simpulse[-100], nt//2-np.argmax(data_simpulse[-100])), color='k')
+plt.plot(np.roll(data_injfrb[0], nt//2-np.argmax(data_injfrb[0])), color='C1')
 
 plt.show()
