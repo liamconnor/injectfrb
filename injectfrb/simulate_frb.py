@@ -32,7 +32,7 @@ class Event(object):
         self._t_ref = t_ref
         self._f_ref = f_ref
         self._dm = dm
-        self._fluence = fluence 
+        self._fluence = 1e3*fluence 
         self._width = width
         self._spec_ind = spec_ind
         self._disp_ind = disp_ind

@@ -53,7 +53,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=1000.0, freq=(1550, 1250), dt=0.00008192,
-                         chunksize=25000, calc_snr=True, start=0, 
+                         chunksize=75000, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
@@ -102,10 +102,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     if simulator=='simpulse':
         import simpulse
 
-    print(paramslist)
     if paramslist is not None:
         params_arr = np.loadtxt(paramslist)
-        print(params_arr.shape)
+        if len(params_arr.shape)==1:
+            params_arr = params_arr[:, None]
     else:
         params_arr = None
 
@@ -199,14 +199,18 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             spec_ind = 0.
             width_sec = 2*delta_t
             if params_arr is not None:
-                dm, fluence, width_sec, spec_ind, disp_ind = params_arr[0,ii],params_arr[1,ii],params_arr[2,ii],params_arr[3,ii],params_arr[4,ii]
-                fluence *= 1000.
+                dm = params_arr[0,ii]
+                fluence = params_arr[1,ii]
+                width_sec = params_arr[2,ii]
+                spec_ind = params_arr[3,ii]
+                disp_ind = params_arr[4,ii]
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
             fluence = np.random.uniform(1, 1000)**(-2/3.)
             fluence *= 1000**(2/3.+1) + 0.75*dm
 
         if simulator=='injectfrb':
+            fluence *= 6
             data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
                                                NTIME=upsamp_factor*NTIME, sim=True, 
                                                fluence=fluence, spec_ind=spec_ind, width=width_sec,
@@ -219,11 +223,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
 
         elif simulator=='simpulse':
-            fluence *= 1e-6
             sp = simpulse.single_pulse(NTIME, NFREQ, freq_arr.min(), freq_arr.max(),
                            dm, scat_tau_ref, width_sec, fluence,
                            spec_ind, 0.)
 
+            print(NTIME, NTIME*delta_t)
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
             data_event = data_event[::-1]
 
@@ -233,7 +237,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         dm_ = params[0]
         params.append(offset)
-
+        
         print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
                                 (ii+1, N_FRB, dm_, params[2]/dt, offset, simulator))
 

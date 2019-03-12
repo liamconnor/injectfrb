@@ -41,18 +41,18 @@ if __name__=='__main__':
 
   parser.add_option('--nfrb', dest='nfrb', type='int', \
                       help="Number of FRBs to inject.", \
-                      default=1)
+                      default=10)
 
   parser.add_option('--outdir', dest='outdir', default='data/',\
                       help="directory to output .fil")
 
   parser.add_option('--upchan_factor', dest='upchan_factor', type='int', \
                       help="Upchannelize data by this factor before injecting. Rebin after.", \
-                      default=2)
+                      default=1)
 
   parser.add_option('--upsamp_factor', dest='upsamp_factor', type='int', \
                       help="Upsample data by this factor before injecting. Downsample after.", \
-                      default=2)
+                      default=1)
 
   parser.add_option('--simulator', dest='simulator', type='str', \
                       help="Either Liam Connor's inject_frb or Kendrick Smith's simpulse", \
@@ -65,7 +65,6 @@ if __name__=='__main__':
   parser.add_option('--dm_max', dest='dm_max', default=2000.,\
                     help="max dms to use, either float or tuple", 
                     type='float')
-
 
   options, args = parser.parse_args()
 

@@ -42,14 +42,14 @@ data_simpulse = np.zeros([nfreq, pulse_nt])
 sp.add_to_timestream(data_simpulse, 0.0, pulse_nt*dt)
 data_simpulse = data_simpulse[::-1]
 
-data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim=True, fluence=1.0, 
+data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=nfreq, NTIME=pulse_nt, sim=True, fluence=fluence, 
     								 spec_ind=0.0, width=intrinsic_width, dm=dm, 
     								 background_noise=np.zeros([nfreq, pulse_nt]),
     								 delta_t=dt, plot_burst=False, 
     								 freq=(freq_hi_MHz, freq_lo_MHz), 
     								 FREQ_REF=freq_ref, 
-     	    						 scintillate=False, scat_tau_ref=0.0, 
-     	    						 disp_ind=2.0)
+                                                                 scintillate=False, scat_tau_ref=0.0, 
+     	    						         disp_ind=2.0)
 
 data_simpulse /= np.max(data_simpulse)
 data_injfrb /= np.max(data_injfrb)
