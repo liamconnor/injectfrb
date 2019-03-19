@@ -184,6 +184,19 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if len(data)==0:
             break             
 
+        if params_arr is not None:
+            dm = params_arr[0,ii]
+            fluence = params_arr[1,ii]
+            width_sec = params_arr[2,ii]
+            spec_ind = params_arr[3,ii]
+            disp_ind = params_arr[4,ii]
+        else:
+            fluence = np.random.uniform(0, 1)**(-2/3.)
+            dm = np.random.uniform(10., 2000.)
+            scat_tau_ref = 0.
+            spec_ind = 0.
+            width_sec = 2*delta_t
+
         if gaussian_noise is True:
             if simulator=='injectfrb':
                 data_event = np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME])
@@ -204,12 +217,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             spec_ind = 0.
             width_sec = 2*delta_t
 
-            if params_arr is not None:
-                dm = params_arr[0,ii]
-                fluence = params_arr[1,ii]
-                width_sec = params_arr[2,ii]
-                spec_ind = params_arr[3,ii]
-                disp_ind = params_arr[4,ii]
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
             fluence = np.random.uniform(1, 1000)**(-2/3.)
