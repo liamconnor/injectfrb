@@ -206,7 +206,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                 #data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             elif simulator=='simpulse':
                 data_event = np.zeros([NFREQ, NTIME])
-                noise_event = np.random.normal(100, noise_std, NFREQ*NTIME)
+                noise_event = np.random.normal(100, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
             else:
                 print("Do not recognize simulator, neither (injectfrb, simpulse)")
                 exit()
@@ -234,7 +234,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
             data_event = data_event[::-1]
-            print(data_event.max())
+            print(data_event.max(), fluence)
             data_event *= (10.*noise_std/np.sqrt(NFREQ))
             data_event += noise_event
 
