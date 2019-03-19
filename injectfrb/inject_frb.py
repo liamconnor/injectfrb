@@ -27,6 +27,7 @@ import simulate_frb
 import reader
 import tools
 
+
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
                                   fn_fil_out, N_FRB, chunksize=2**11):
     NFREQ = header['nchans']
@@ -57,7 +58,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
-                         simulator='injectfrb', paramslist=None):
+                         simulator='injectfrb', paramslist=None, noise_std=5.):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
 
@@ -157,7 +158,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         np.random.seed(np.random.randint(12312312))
         if gaussian_noise is True:
             NTIME = chunksize
-            offset = 0#random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
+            offset = 0
             data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
                                                                       start=0, stop=1)
             data = np.empty([NFREQ, NTIME])
@@ -185,10 +186,14 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         if gaussian_noise is True:
             if simulator=='injectfrb':
-                data_event = np.random.normal(100, 5, upchan_factor*NFREQ*upsamp_factor*NTIME)
+                #data_event = np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME])
+                #noise_event = np.random.normal(100, 5, upchan_factor*NFREQ*upsamp_factor*NTIME)
+                data_event = np.random.normal(100, noise_std, upchan_factor*NFREQ*upsamp_factor*NTIME)
                 data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             else:
-                data_event = np.random.normal(100, 5, NFREQ*NTIME)
+                #data_event = np.zeros([NFREQ, NTIME])
+                #noise_event = np.random.normal(100, 5, NFREQ*NTIME)
+                data_event = np.random.normal(100, noise_std, NFREQ*NTIME)
                 data_event = data_event.reshape(NFREQ, NTIME)
 
             fluence = np.random.uniform(1, 1000)**(-2/3.)
@@ -198,6 +203,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             scat_tau_ref = 0.
             spec_ind = 0.
             width_sec = 2*delta_t
+
             if params_arr is not None:
                 dm = params_arr[0,ii]
                 fluence = params_arr[1,ii]
@@ -210,7 +216,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             fluence *= 1000**(2/3.+1) + 0.75*dm
 
         if simulator=='injectfrb':
-            fluence *= 6
             data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
                                                NTIME=upsamp_factor*NTIME, sim=True, 
                                                fluence=fluence, spec_ind=spec_ind, width=width_sec,
@@ -227,13 +232,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                            dm, scat_tau_ref, width_sec, fluence,
                            spec_ind, 0.)
 
-            print(NTIME, NTIME*delta_t)
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
             data_event = data_event[::-1]
 
             # [dm, fluence, width, spec_ind, disp_ind, scat_tau_ref]
             params = [dm, fluence, width_sec, spec_ind, 2., scat_tau_ref]
-
 
         dm_ = params[0]
         params.append(offset)

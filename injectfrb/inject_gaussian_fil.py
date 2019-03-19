@@ -87,7 +87,7 @@ if __name__=='__main__':
       outfile.write(spectrum)
       outfile.close()
   except:
-      print("Could not load sigproc")
+      print("Could not load sigproc / create filterbank")
 
   if not os.path.isfile(fnfil):
     print("Need either a test .fil file or sigproc")

@@ -32,7 +32,7 @@ class Event(object):
         self._t_ref = t_ref
         self._f_ref = f_ref
         self._dm = dm
-        self._fluence = 1e3*fluence 
+        self._fluence = fluence 
         self._width = width
         self._spec_ind = spec_ind
         self._disp_ind = disp_ind
@@ -137,9 +137,8 @@ class Event(object):
         NFREQ = data.shape[0]
         NTIME = data.shape[1]
         tmid = NTIME//2
-
         scint_amp = self.scintillation(freq)
-        self._fluence /= np.sqrt(NFREQ)
+#        self._fluence /= np.sqrt(NFREQ)
         bandwidth = np.abs(freq[-1] - freq[0])
         tau_pix = self._scat_tau_ref/delta_t # scattering time in time samples
 
@@ -155,8 +154,8 @@ class Event(object):
             # calculate dm-smeared and sampled 
             # pulse width for gaussian profile
             width_ = self.calc_width(self._dm, f*1e-3,#self._f_ref*1e-3, 
-                                            bw=bandwidth, NFREQ=NFREQ,
-                                            ti=self._width, tsamp=delta_t, tau=0)
+                                     bw=bandwidth, NFREQ=NFREQ,
+                                     ti=self._width, tsamp=delta_t, tau=0)
 
             index_width = max(1, (np.round((width_/ delta_t))).astype(int))
             tpix = int(self.arrival_time(f) / delta_t)
@@ -172,11 +171,13 @@ class Event(object):
             val *= self._fluence
             val /= (width_ / delta_t)
             val = val * (f / self._f_ref) ** self._spec_ind 
+            #print(f, val.max(), self._fluence)
 
             if scintillate is True:
                 val = (0.1 + scint_amp[ii]) * val 
 
             data[ii] += val
+            #print(data[ii].max())
         
     def dm_transform(self, delta_t, data, freq, maxdm=5.0, NDM=50):
         """ Transform freq/time data to dm/time data.
@@ -305,7 +306,8 @@ def uniform_range(min_, max_, n=1):
 def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
                 spec_ind=0.0, width=0.0005, dm=0,
                 background_noise=None, delta_t=0.00008192,
-                plot_burst=False, freq=(1520., 1220.), FREQ_REF=1400., scintillate=False,
+                plot_burst=False, freq=(1520., 1220.), 
+                FREQ_REF=1400., scintillate=False,
                 scat_tau_ref=0.0, disp_ind=2.):
     """ Simulate fast radio bursts using the EventSimulator class.
 
@@ -365,7 +367,9 @@ def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
     E = Event(t_ref, FREQ_REF, dm, fluence, 
               width, spec_ind, disp_ind, scat_tau_ref)
 
+    print(data.max())
     E.add_to_data(delta_t, freq, data, scintillate=scintillate)
+    print(data.max())
 
     if plot_burst:
         subplot(211)
