@@ -229,7 +229,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         elif simulator=='simpulse':
             # Scaling to match fluence vals with injectfrb
-            fluence /= 400. 
+            fluence *= 1e-3 
             sp = simpulse.single_pulse(NTIME, NFREQ, freq_arr.min(), freq_arr.max(),
                            dm, scat_tau_ref, width_sec, fluence,
                            spec_ind, 0.)
