@@ -63,7 +63,7 @@ def plot_four_frbs():
                             background_noise=np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME]), 
                             delta_t=dt/upsamp_factor, plot_burst=False, 
                             freq=(freq[0],freq[-1]), FREQ_REF=freq_ref, 
-                            scintillate=False, scat_tau_ref=0.025)
+                                                   scintillate=False, scat_tau_ref=0.001)
 
     # downsample in time/freq
     data_chime = data_chime.reshape(-1, upchan_factor, NTIME, upsamp_factor)
