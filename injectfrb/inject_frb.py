@@ -208,19 +208,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                 #noise_event = np.random.normal(100, 5, NFREQ*NTIME)
                 data_event = np.random.normal(100, noise_std, NFREQ*NTIME)
                 data_event = data_event.reshape(NFREQ, NTIME)
-
-            fluence = np.random.uniform(1, 1000)**(-2/3.)
-            fluence *= 1000**(2/3.+1) + 0.75*dm
-            fluence /= 10.
-            dm = np.random.uniform(10., 1000.)
-            scat_tau_ref = 0.
-            spec_ind = 0.
-            width_sec = 2*delta_t
-
         else:
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
-            fluence = np.random.uniform(1, 1000)**(-2/3.)
-            fluence *= 1000**(2/3.+1) + 0.75*dm
 
         if simulator=='injectfrb':
             data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
