@@ -187,7 +187,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if gaussian_noise is True:
             if simulator=='injectfrb':
                 data_event = np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME])
-                noise_event = np.random.normal(100, 5, NFREQ*NTIME)
+                noise_event = np.random.normal(100, 5, NFREQ*NTIME).reshape(NFREQ, NTIME)
                 #data_event = np.random.normal(100, noise_std, upchan_factor*NFREQ*upsamp_factor*NTIME)
                 #data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             else:
