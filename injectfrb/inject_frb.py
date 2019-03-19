@@ -202,8 +202,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             if simulator=='injectfrb':
                 data_event = np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME])
                 noise_event = np.random.normal(100, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
-                #data_event = np.random.normal(100, noise_std, upchan_factor*NFREQ*upsamp_factor*NTIME)
-                #data_event = data_event.reshape(upchan_factor*NFREQ, upsamp_factor*NTIME)
             elif simulator=='simpulse':
                 data_event = np.zeros([NFREQ, NTIME])
                 noise_event = np.random.normal(100, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
@@ -229,7 +227,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         elif simulator=='simpulse':
             # Scaling to match fluence vals with injectfrb
-            fluence *= 1e-3 
+            fluence *= 5e-4 
             sp = simpulse.single_pulse(NTIME, NFREQ, freq_arr.min(), freq_arr.max(),
                            dm, scat_tau_ref, width_sec, fluence,
                            spec_ind, 0.)
