@@ -190,6 +190,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             width_sec = params_arr[2,ii]
             spec_ind = params_arr[3,ii]
             disp_ind = params_arr[4,ii]
+            scat_tau_ref = 0.
         else:
             fluence = np.random.uniform(0, 1)**(-2/3.)
             dm = np.random.uniform(10., 2000.)
