@@ -12,7 +12,7 @@ from scipy import signal
 
 try:
     import matplotlib 
-    matplotlib.use('Agg')
+    matplotlib.use('Agg', warn=False)
     import matplotlib.pyplot as plt
 except:
     plt = None
@@ -124,7 +124,7 @@ class Event(object):
         scat_prof = self.scat_profile(nt, f, tau) 
         pulse_prof = signal.fftconvolve(gaus_prof, scat_prof)[:nt]
         pulse_prof *= (width/(width + tau_nu))
-#        print(f, tau, width, width/(width+tau))
+
         return pulse_prof
 
     def add_to_data(self, delta_t, freq, data, scintillate=True):
@@ -367,9 +367,7 @@ def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
     E = Event(t_ref, FREQ_REF, dm, fluence, 
               width, spec_ind, disp_ind, scat_tau_ref)
 
-    print(data.max())
     E.add_to_data(delta_t, freq, data, scintillate=scintillate)
-    print(data.max())
 
     if plot_burst:
         subplot(211)

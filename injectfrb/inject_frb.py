@@ -222,7 +222,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                                FREQ_REF=freq_ref, scintillate=False)
 
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
-            data_event *= (10.*noise_std/np.sqrt(NFREQ))
+            data_event *= (15.*noise_std/np.sqrt(NFREQ))
             data_event += noise_event
 
         elif simulator=='simpulse':
