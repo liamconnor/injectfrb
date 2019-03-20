@@ -18,6 +18,7 @@ along with a text file with the relevant trigger information in:
 outputdir/injectfrb_nfrb50_*.txt
 
 Requires:
+==========
 
 sigproc 
 
