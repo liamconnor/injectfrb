@@ -80,6 +80,7 @@ def test_corr_coefficient():
         
     data_injfrb_prof = np.mean(data_injfrb, axis=0)
     data_simpulse_prof = np.mean(data_simpulse, axis=0)
+    data_simpulse_prof = np.roll(data_simpulse_prof, C.ntime//2-np.argmax(data_simpulse_prof))
 
     r = C.corr_coefficient(data_injfrb_prof, data_simpulse_prof)
     print("Correlation coefficient between pulses: %f" % r)
@@ -91,6 +92,8 @@ def test_plot_comparison():
         
     data_injfrb_prof = np.mean(data_injfrb, axis=0)
     data_simpulse_prof = np.mean(data_simpulse, axis=0)
+
+    data_simpulse_prof = np.roll(data_simpulse_prof, C.ntime//2-np.argmax(data_simpulse_prof))
 
     r = C.plot_comparison(data_injfrb_prof, data_simpulse_prof)
     print("Correlation coefficient between pulses: %f" % r)
