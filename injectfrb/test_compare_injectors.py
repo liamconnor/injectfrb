@@ -37,7 +37,7 @@ class CompareInjectors:
 		undispersed_arrival_time = 0.1
 		sm = self.scat_tau_ref
 		sp = simpulse.single_pulse(self.ntime, self.nfreq, self.freq_lo_MHz, self.freq_hi_MHz,
-                           self.dm, sm, self.intrinsic_width, self.fluence,
+                           self.dm, sm, self.width, self.fluence,
                            self.spec_ind, undispersed_arrival_time)
 
 		data_simpulse = np.zeros([self.nfreq, self.ntime])
