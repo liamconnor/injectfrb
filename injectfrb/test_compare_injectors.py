@@ -107,7 +107,37 @@ def test_corr_coeff():
 
     r_arr = C.corr_coeff_arr(data_injfrb, data_simpulse)
 
-    plt.plot(C.freq_arr, r_arr)
+    plt.subplot(131)
+    plt.plot(C.freq_arr, r_arr, '.', color='k')
+    plt.ylabel('Correlation Coeff')
+    plt.xlabel('Freq [MHz]')
+
+    C = CompareInjectors(ntime=5000, dm=100., width=0.001, dt=0.001)
+    data_injfrb = C.gen_injfrb_pulse()
+    data_simpulse = C.gen_simpulse()
+    np.save('injarr', data_injfrb)
+    np.save('simparr', data_simpulse)
+    data_injfrb_prof = np.mean(data_injfrb, axis=0)
+    data_simpulse_prof = np.mean(data_simpulse, axis=0)
+
+    r_arr = C.corr_coeff_arr(data_injfrb, data_simpulse)
+    plt.subplot(132)
+    plt.plot(C.freq_arr, r_arr, '.', color='k')
+    plt.xlabel('Freq [MHz]')
+
+    C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.001)
+    data_injfrb = C.gen_injfrb_pulse()
+    data_simpulse = C.gen_simpulse()
+    np.save('injarr', data_injfrb)
+    np.save('simparr', data_simpulse)
+    data_injfrb_prof = np.mean(data_injfrb, axis=0)
+    data_simpulse_prof = np.mean(data_simpulse, axis=0)
+
+    r_arr = C.corr_coeff_arr(data_injfrb, data_simpulse)
+    plt.subplot(133)
+    plt.plot(C.freq_arr, r_arr, '.', color='k')
+    plt.xlabel('Freq [MHz]')
+
     plt.show()
 
 def test_plot_comparison():
