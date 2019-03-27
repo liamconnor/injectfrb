@@ -74,7 +74,7 @@ def test_gen_simpulse():
     data = C.gen_simpulse()
 
 def test_corr_coefficient():
-    C = CompareInjectors(dm=0.)
+    C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.005)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
         
@@ -88,7 +88,7 @@ def test_corr_coefficient():
         print("Correlation coefficient: %f at freq_ind: %d" % (r,ii))
 
 def test_plot_comparison():
-    C = CompareInjectors(dm=0.)
+    C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.005)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
         
