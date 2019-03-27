@@ -60,10 +60,14 @@ class CompareInjectors:
     def plot_comparison(self, data1, data2):
         fig = plt.figure(figsize=(8,8))
 
-        plt.subplot(121)
-        plt.plot(data1)
-        plt.subplot(122)
-        plt.plot(data2)
+        plt.subplot(221)
+        plt.plot(data1[100])
+        plt.subplot(222)
+        plt.plot(data2[100])
+        plt.subplot(223)
+        plt.imshow(data1, aspect='auto', cmap='Greys')
+        plt.subplot(224)
+        plt.imshow(data2, aspect='auto', cmap='Greys')
         plt.show()
 
     def corr_coeff_arr(self, data_arr1, data_arr2):
@@ -103,7 +107,7 @@ def test_corr_coeff():
     plt.show()
 
 def test_plot_comparison():
-    C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.005)
+    C = CompareInjectors(ntime=2048, dm=100., width=0.001, dt=0.001)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
         
@@ -112,8 +116,7 @@ def test_plot_comparison():
 
     data_simpulse_prof = np.roll(data_simpulse_prof, C.ntime//2-np.argmax(data_simpulse_prof))
 
-    C.plot_comparison(data_injfrb_prof, data_simpulse_prof)
-
+    C.plot_comparison(data_injfrb, data_simpulse)
 
 
 if __name__=='__main__':
