@@ -51,7 +51,7 @@ class CompareInjectors:
 		Both data arrays should be 1D of equal length
 		"""
 
-		r = np.dot(data1, data2) / np.sqrt(np.dot(data1, data1), np.dot(data2, data2))
+		r = np.dot(data1, data2) / np.sqrt(np.dot(data1, data1)*np.dot(data2, data2))
 
 		return r
 
