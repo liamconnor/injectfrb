@@ -72,6 +72,10 @@ def test_corr_coefficient():
 	print("Correlation coefficient: %f" % r)
 
 
+if __name__=='__main__':
+	test_gen_injfrb()
+	test_gen_simpulse()
+	test_corr_coefficient()
 
 
 
