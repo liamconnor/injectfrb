@@ -20,6 +20,7 @@ class CompareInjectors:
         self.scat_tau_ref = scat_tau_ref
         self.spec_ind = spec_ind
         self.freq_ref = freq_ref
+        self.freq_arr = np.linspace(freq[0], freq[1], nfreq)
 
     def gen_injfrb_pulse(self):
         data_bg = np.zeros([self.nfreq, self.ntime])
@@ -47,7 +48,7 @@ class CompareInjectors:
 
         return data_simpulse
 
-    def corr_coefficient(self, data1, data2):
+    def corr_coeff(self, data1, data2):
         """ 
         Both data arrays should be 1D of equal length
         """
@@ -65,6 +66,19 @@ class CompareInjectors:
         plt.plot(data2)
         plt.show()
 
+    def corr_coeff_arr(self, data_arr1, data_arr2):
+        """ (nfreq, ntime) array
+        """ 
+
+        for ii, ff in enumerate(self.freq_arr):
+            data1 = np.roll(data_arr1[ii], self.ntime//2-np.argmax(data_arr1[ii]))
+            data2 = np.roll(data_arr2[ii], self.ntime//2-np.argmax(data_arr2[ii]))
+            r = self.corr_coeff(data1, data2)
+            print("Correlation coefficient: %f at %0.1f MHz" % (r,ff))
+            r_arr.append(r)
+
+        return np.array(r_arr)
+
 def test_gen_injfrb():
     C = CompareInjectors()
     data = C.gen_injfrb_pulse()
@@ -73,7 +87,7 @@ def test_gen_simpulse():
     C = CompareInjectors()
     data = C.gen_simpulse()
 
-def test_corr_coefficient():
+def test_corr_coeff():
     C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.005)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
@@ -81,11 +95,10 @@ def test_corr_coefficient():
     data_injfrb_prof = np.mean(data_injfrb, axis=0)
     data_simpulse_prof = np.mean(data_simpulse, axis=0)
 
-    for ii in range(C.nfreq):
-        data_simpulse_prof = np.roll(data_simpulse[ii], C.ntime//2-np.argmax(data_simpulse[ii]))
-        data_injfrb_prof = np.roll(data_injfrb[ii], C.ntime//2-np.argmax(data_injfrb[ii]))
-        r = C.corr_coefficient(data_injfrb_prof, data_simpulse_prof)
-        print("Correlation coefficient: %f at freq_ind: %d" % (r,ii))
+    r_arr = C.corr_coeff_arr(data_injfrb, data_simpulse)
+
+    plt.plot(C.freq_arr, r_arr)
+    plt.show()
 
 def test_plot_comparison():
     C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.005)
@@ -98,6 +111,8 @@ def test_plot_comparison():
     data_simpulse_prof = np.roll(data_simpulse_prof, C.ntime//2-np.argmax(data_simpulse_prof))
 
     C.plot_comparison(data_injfrb_prof, data_simpulse_prof)
+
+
 
 if __name__=='__main__':
     test_gen_injfrb()
