@@ -5,6 +5,12 @@ import simpulse
 import simulate_frb
 
 class CompareInjectors:
+    """ Class to generate pulses with both simpulse 
+    and injectfrb packages. 
+
+    Computes correlation coefficient between two 
+    pulse profiles or spectra.
+    """
 
 
     def __init__(self, nfreq=1024, ntime=1024, fluence=1, width=0.001,
@@ -23,6 +29,9 @@ class CompareInjectors:
         self.freq_arr = np.linspace(freq[0], freq[1], nfreq)
 
     def gen_injfrb_pulse(self):
+        """ Generate pulse dynamic spectrum 
+        with injectfrb.simulate_frb
+        """
         data_bg = np.zeros([self.nfreq, self.ntime])
         data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=self.nfreq, NTIME=self.ntime,
                                      sim=True, fluence=self.fluence, 
@@ -36,6 +45,9 @@ class CompareInjectors:
         return data_injfrb
 
     def gen_simpulse(self):
+        """ Generate pulse dynamic spectrum 
+        with simpulse 
+        """
         undispersed_arrival_time = 0.5*self.ntime*self.dt 
 #        undispersed_arrival_time -= 4148*self.dm*(self.freq_hi_MHz**-2)
         sm = self.scat_tau_ref
@@ -59,6 +71,9 @@ class CompareInjectors:
         return r
 
     def plot_comparison(self, data1, data2, title1='', title2=''):
+        """ Plot dynamic spectra and pulse profiles 
+        for two simulated pulses 
+        """
         fig = plt.figure(figsize=(8,8))
 
         plt.subplot(221)
@@ -74,7 +89,9 @@ class CompareInjectors:
         plt.show()
 
     def corr_coeff_arr(self, data_arr1, data_arr2):
-        """ (nfreq, ntime) array
+        """ Compute correlation coefficient of pulse profiles 
+        for each frequency in array
+        data.shape = (nfreq, ntime) 
         """ 
 
         r_arr = []
