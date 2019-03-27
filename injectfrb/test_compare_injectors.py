@@ -50,11 +50,10 @@ class CompareInjectors:
 		""" 
 		Both data arrays should be 1D of equal length
 		"""
-
+                
 		r = np.dot(data1, data2) / np.sqrt(np.dot(data1, data1)*np.dot(data2, data2))
 
 		return r
-
 
 def test_gen_injfrb():
 	C = CompareInjectors()
@@ -68,8 +67,11 @@ def test_corr_coefficient():
 	C = CompareInjectors()
 	data_injfrb = C.gen_injfrb_pulse()
 	data_simpulse = C.gen_simpulse()
+        
+        data_injfrb_prof = np.mean(data_injfrb, axis=0)
+        data_simpulse_prof = np.mean(data_simpulse, axis=0)
 
-	r = C.corr_coefficient(data_injfrb, data_simpulse)
+	r = C.corr_coefficient(data_injfrb_prof, data_simpulse_prof)
 	print("Correlation coefficient: %f" % r)
 
 
@@ -77,7 +79,7 @@ if __name__=='__main__':
 	test_gen_injfrb()
 	test_gen_simpulse()
 	test_corr_coefficient()
-
+        
 
 
 
