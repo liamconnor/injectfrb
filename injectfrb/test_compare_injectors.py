@@ -9,7 +9,7 @@ class CompareInjectors:
 
     def __init__(self, nfreq=1024, ntime=1024, fluence=1, width=0.001,
                  dm=100., dt=0.001, freq=(2000, 1000), spec_ind=0.,
-                 scat_tau_ref=0., freq_ref=1500.):
+                 scat_tau_ref=0., freq_ref=np.inf):
         self.nfreq = nfreq
         self.ntime = ntime 
         self.fluence = fluence 
@@ -36,7 +36,8 @@ class CompareInjectors:
         return data_injfrb
 
     def gen_simpulse(self):
-        undispersed_arrival_time = 0.1
+        undispersed_arrival_time = 0.5*self.ntime*self.dt 
+        undispersed_arrival_time -= 4148*self.dm*(self.freq_hi_MHz**-2)
         sm = self.scat_tau_ref
         sp = simpulse.single_pulse(self.ntime, self.nfreq, self.freq_lo_MHz, self.freq_hi_MHz,
                            self.dm, sm, self.width, self.fluence,
