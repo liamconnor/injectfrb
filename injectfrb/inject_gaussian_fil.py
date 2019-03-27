@@ -22,7 +22,7 @@ filhdr = {'telescope_id': 10,
       'src_dej': -174958.1,
       'tstart': 58523.3437492,
       'nbeams': 1,
-      'fch1': 1549.8046875,
+      'fch1': 1549.5056152,
       'za_start': 0.0,
       'rawdatafile': '',
       'nifs': 1,
@@ -93,15 +93,13 @@ if __name__=='__main__':
     print("Need either a test .fil file or sigproc")
     exit()
 
-  outdir = 'data/'
-
   ES = simulate_frb.EventSimulator()
   ES.draw_event_parameters_array(fluence_min=1, dm_min=options.dm_min, dm_max=options.dm_max, 
                                  nfrb=options.nfrb, spec_ind_min=0., spec_ind_max=0., width_mean=.001, 
                                  width_sig=1, fnout='./test.txt')
 
-  if not os.path.isdir(outdir):
-      os.mkdir(outdir)
+  if not os.path.isdir(options.outdir):
+      os.mkdir(options.outdir)
 
   timestr = time.strftime("%Y%m%d-%H%M")
   os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
