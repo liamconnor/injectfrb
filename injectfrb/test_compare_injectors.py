@@ -97,7 +97,7 @@ def test_gen_simpulse():
     data = C.gen_simpulse()
 
 def test_corr_coeff():
-    C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.005)
+    C = CompareInjectors(ntime=5000, dm=100., width=0.005, dt=0.001)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
     np.save('injarr', data_injfrb)
