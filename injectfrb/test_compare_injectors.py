@@ -7,7 +7,7 @@ class CompareInjectors:
 
 
 	def __init__(self, nfreq=1024, ntime=1024, fluence=1, width=0.001,
-				 dm=100., dt=0.001, freq=(1000, 2000), spec_ind=0.,
+				 dm=100., dt=0.001, freq=(2000, 1000), spec_ind=0.,
 				 scat_tau_ref=0., freq_ref=1500.):
 		self.nfreq = nfreq
 		self.ntime = ntime 
