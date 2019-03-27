@@ -55,6 +55,15 @@ class CompareInjectors:
 
 		return r
 
+	def plot_comparison(self, data1, data2):
+		fig = plt.figure(figsize=(8,8))
+
+		plt.subplot(121)
+		plt.plot(data1)
+		plt.subplot(122)
+		plt.plot(data2)
+		plt.show()
+
 def test_gen_injfrb():
 	C = CompareInjectors()
 	data = C.gen_injfrb_pulse()
@@ -64,22 +73,33 @@ def test_gen_simpulse():
 	data = C.gen_simpulse()
 
 def test_corr_coefficient():
-	C = CompareInjectors()
+	C = CompareInjectors(dm=0.)
 	data_injfrb = C.gen_injfrb_pulse()
 	data_simpulse = C.gen_simpulse()
         
-        data_injfrb_prof = np.mean(data_injfrb, axis=0)
-        data_simpulse_prof = np.mean(data_simpulse, axis=0)
+    data_injfrb_prof = np.mean(data_injfrb, axis=0)
+    data_simpulse_prof = np.mean(data_simpulse, axis=0)
 
 	r = C.corr_coefficient(data_injfrb_prof, data_simpulse_prof)
-	print("Correlation coefficient: %f" % r)
+	print("Correlation coefficient between pulses: %f" % r)
 
+def test_plot_comparison():
+	C = CompareInjectors(dm=0.)
+	data_injfrb = C.gen_injfrb_pulse()
+	data_simpulse = C.gen_simpulse()
+        
+    data_injfrb_prof = np.mean(data_injfrb, axis=0)
+    data_simpulse_prof = np.mean(data_simpulse, axis=0)
+
+	r = C.plot_comparison(data_injfrb_prof, data_simpulse_prof)
+	print("Correlation coefficient between pulses: %f" % r)
 
 if __name__=='__main__':
 	test_gen_injfrb()
 	test_gen_simpulse()
 	test_corr_coefficient()
-        
+	test_plot_comparison()
+
 
 
 
