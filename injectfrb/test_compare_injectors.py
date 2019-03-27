@@ -150,7 +150,7 @@ def test_corr_coeff():
     plt.show()
 
 def test_plot_comparison():
-    C = CompareInjectors(ntime=25000, dm=500., width=0.0005, dt=0.0005)
+    C = CompareInjectors(ntime=15000, nfreq=256, dm=500., width=0.0005, dt=0.0005)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
         
