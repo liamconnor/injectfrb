@@ -81,9 +81,10 @@ def test_corr_coefficient():
     data_injfrb_prof = np.mean(data_injfrb, axis=0)
     data_simpulse_prof = np.mean(data_simpulse, axis=0)
 
-    for ii in range(C.nfreq)
+    for ii in range(C.nfreq):
         data_simpulse_prof = np.roll(data_simpulse[ii], C.ntime//2-np.argmax(data_simpulse[ii]))
-        r = C.corr_coefficient(data_injfrb[ii], data_simpulse_prof)
+        data_injfrb_prof = data_injfrb[ii]
+        r = C.corr_coefficient(data_injfrb_prof, data_simpulse_prof)
         print("Correlation coefficient: %f at freq_ind: %d" % (r,ii))
 
 def test_plot_comparison():
