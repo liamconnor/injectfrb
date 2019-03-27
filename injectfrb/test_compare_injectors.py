@@ -112,6 +112,8 @@ def test_corr_coeff():
     plt.ylabel('Correlation Coeff')
     plt.xlabel('Freq [MHz]')
     plt.ylim(0.5, 1.05)
+    title = 'DM=%d  pulse_width=%f  dt=%f' % (100, 0.005, 0.001)
+    plt.title('Resolved ' + title)
 
     C = CompareInjectors(ntime=5000, dm=500., width=0.0005, dt=0.0005)
     data_injfrb = C.gen_injfrb_pulse()
@@ -126,8 +128,10 @@ def test_corr_coeff():
     plt.plot(C.freq_arr[::2], r_arr[::2], '.', color='k')
     plt.xlabel('Freq [MHz]')
     plt.ylim(0.5, 1.05)
+    title = 'DM=%d  pulse_width=%f  dt=%f' % (500, 0.0005, 0.0005)
+    plt.title('DM-smeared ' + title)
 
-    C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.001)
+    C = CompareInjectors(ntime=5000, dm=0., width=0.0001, dt=0.001)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
     np.save('injarr', data_injfrb)
@@ -140,11 +144,13 @@ def test_corr_coeff():
     plt.plot(C.freq_arr[::2], r_arr[::2], '.', color='k')
     plt.xlabel('Freq [MHz]')
     plt.ylim(0.5, 1.05)
+    title = 'DM=%d  pulse_width=%f  dt=%f' % (0, 0.0001, 0.001)
+    plt.title('Sample-smeared ' + title)
 
     plt.show()
 
 def test_plot_comparison():
-    C = CompareInjectors(ntime=2048, dm=100., width=0.001, dt=0.001)
+    C = CompareInjectors(ntime=5000, dm=500., width=0.0005, dt=0.0005)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
         
