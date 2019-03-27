@@ -119,7 +119,7 @@ def test_plot_comparison():
 
     data_simpulse_prof = np.roll(data_simpulse_prof, C.ntime//2-np.argmax(data_simpulse_prof))
 
-    C.plot_comparison(data_injfrb, data_simpulse, title1='INJFRB', title1='SIMPULSE')
+    C.plot_comparison(data_injfrb, data_simpulse, title1='INJFRB', title2='SIMPULSE')
 
 
 if __name__=='__main__':
