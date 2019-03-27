@@ -70,6 +70,8 @@ class CompareInjectors:
         """ (nfreq, ntime) array
         """ 
 
+        r_arr = []
+
         for ii, ff in enumerate(self.freq_arr):
             data1 = np.roll(data_arr1[ii], self.ntime//2-np.argmax(data_arr1[ii]))
             data2 = np.roll(data_arr2[ii], self.ntime//2-np.argmax(data_arr2[ii]))
