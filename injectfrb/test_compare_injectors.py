@@ -107,6 +107,7 @@ def test_corr_coeff():
 
     r_arr = C.corr_coeff_arr(data_injfrb, data_simpulse)
 
+    fig = plt.figure(figsize=(9,9))
     plt.subplot(131)
     plt.plot(C.freq_arr[::2], r_arr[::2], '.', color='k')
     plt.ylabel('Correlation Coeff <injfrb vs. simpulse>', fontsize=14)
@@ -144,7 +145,7 @@ def test_corr_coeff():
     plt.ylim(0.5, 1.05)
     title = '\nDM=%d\npulse_width=%0.1f ms\ndt=%0.1f ms' % (0, 0.1, 5)
     plt.title('Sample-smeared ' + title, fontsize=12)
-
+    plt.tight_layout()
     plt.show()
 
 def test_plot_comparison():
