@@ -37,7 +37,7 @@ class CompareInjectors:
 
     def gen_simpulse(self):
         undispersed_arrival_time = 0.5*self.ntime*self.dt 
-        undispersed_arrival_time -= 4148*self.dm*(self.freq_hi_MHz**-2)
+#        undispersed_arrival_time -= 4148*self.dm*(self.freq_hi_MHz**-2)
         sm = self.scat_tau_ref
         sp = simpulse.single_pulse(self.ntime, self.nfreq, self.freq_lo_MHz, self.freq_hi_MHz,
                            self.dm, sm, self.width, self.fluence,
@@ -58,12 +58,14 @@ class CompareInjectors:
 
         return r
 
-    def plot_comparison(self, data1, data2):
+    def plot_comparison(self, data1, data2, title1='', title2=''):
         fig = plt.figure(figsize=(8,8))
 
         plt.subplot(221)
+        plt.title(title1)
         plt.plot(data1[100])
         plt.subplot(222)
+        plt.title(title2)
         plt.plot(data2[100])
         plt.subplot(223)
         plt.imshow(data1, aspect='auto', cmap='Greys')
@@ -117,7 +119,7 @@ def test_plot_comparison():
 
     data_simpulse_prof = np.roll(data_simpulse_prof, C.ntime//2-np.argmax(data_simpulse_prof))
 
-    C.plot_comparison(data_injfrb, data_simpulse)
+    C.plot_comparison(data_injfrb, data_simpulse, title1='INJFRB', title1='SIMPULSE')
 
 
 if __name__=='__main__':
