@@ -100,7 +100,8 @@ def test_corr_coeff():
     C = CompareInjectors(ntime=5000, dm=100., width=0.0001, dt=0.005)
     data_injfrb = C.gen_injfrb_pulse()
     data_simpulse = C.gen_simpulse()
-        
+    np.save('injarr', data_injfrb)
+    np.save('simparr', data_simpulse)
     data_injfrb_prof = np.mean(data_injfrb, axis=0)
     data_simpulse_prof = np.mean(data_simpulse, axis=0)
 
