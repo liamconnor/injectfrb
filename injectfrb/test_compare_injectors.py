@@ -117,7 +117,7 @@ def test_plot_comparison():
 if __name__=='__main__':
     test_gen_injfrb()
     test_gen_simpulse()
-    test_corr_coefficient()
+    test_corr_coeff()
     test_plot_comparison()
 
 
