@@ -124,7 +124,7 @@ for ii, dm in enumerate(DMs):
         print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
 
 #C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
-plt.imshow(r_arr, aspect='auto', extent=[widths[0], widths[-1], DMs[0], DMs[-1]])
+plt.imshow(np.log10(1-r_arr), aspect='auto', extent=[widths[0], widths[-1], DMs[0], DMs[-1]])
 plt.colorbar()
 plt.show()
 exit()
