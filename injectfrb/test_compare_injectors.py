@@ -115,8 +115,9 @@ for dm in DMs:
         C = CompareInjectors(ntime=nt, dm=dm, width=width, dt=0.001)
         data_injfrb = C.gen_injfrb_pulse()
         data_simpulse = C.gen_simpulse()
-        r_arr = C.corr_coeff_arr(data_injfrb[512], data_simpulse[512])
+        r_arr = C.corr_coeff(data_injfrb[512], data_simpulse[512])
 
+C.plot_comparison(self, data_injfrb, data_simpulse, title1='', title2='')
 exit()
 
 def test_gen_injfrb():
