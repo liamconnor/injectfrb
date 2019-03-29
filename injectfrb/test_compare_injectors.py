@@ -105,6 +105,20 @@ class CompareInjectors:
 
         return np.array(r_arr)
 
+DMs = np.linspace(10., 2000, 50)
+widths = np.linspace(0.0001, 0.05, 50)
+
+for dm in DMs:
+    for width in widths:
+        print(width, dm)
+        nt = max(25000, int(2*4183*dm*(1000**-2)))
+        C = CompareInjectors(ntime=nt, dm=dm, width=width, dt=0.001)
+        data_injfrb = C.gen_injfrb_pulse()
+        data_simpulse = C.gen_simpulse()
+        r_arr = C.corr_coeff_arr(data_injfrb[512], data_simpulse[512])
+
+exit()
+
 def test_gen_injfrb():
     C = CompareInjectors()
     data = C.gen_injfrb_pulse()
