@@ -127,7 +127,7 @@ class Event(object):
 
         return pulse_prof
 
-    def add_to_data(self, delta_t, freq, data, scintillate=True):
+    def add_to_data(self, delta_t, freq, data, scintillate=False):
         """ Method to add already-dedispersed pulse 
         to background noise data. Includes frequency-dependent 
         width (smearing, scattering, etc.) and amplitude 
@@ -137,7 +137,10 @@ class Event(object):
         NFREQ = data.shape[0]
         NTIME = data.shape[1]
         tmid = NTIME//2
-        scint_amp = self.scintillation(freq)
+    
+        if scintillation:
+            scint_amp = self.scintillation(freq)
+            
 #        self._fluence /= np.sqrt(NFREQ)
         bandwidth = np.abs(freq[-1] - freq[0])
         tau_pix = self._scat_tau_ref/delta_t # scattering time in time samples
@@ -174,6 +177,7 @@ class Event(object):
             #print(f, val.max(), self._fluence)
 
             if scintillate is True:
+                print('scintillating')
                 val = (0.1 + scint_amp[ii]) * val 
 
             data[ii] += val
