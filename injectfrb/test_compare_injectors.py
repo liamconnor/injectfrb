@@ -105,34 +105,36 @@ class CompareInjectors:
 
         return np.array(r_arr)
 
-ndm = 3
-nwidth = 5
-DMs = np.linspace(10., 2000, ndm)
-widths = np.logspace(-4, -1.5, nwidth)
-dt = 0.001
 
-r_arr = np.empty([ndm, nwidth])
+def gen_corrcoef_grid(ndm=10, nwidth=10):
+    DMs = np.linspace(10., 2000, ndm)
+    widths = np.logspace(-4, -1.5, nwidth)
+    dt = 0.001
 
-for ii, dm in enumerate(DMs):
-    for jj, width in enumerate(widths):
-        nt = max(2500, int(3*4183*dm*(1000**-2)/dt))
-        C = CompareInjectors(ntime=nt, dm=dm, width=width, dt=dt)
-        data_injfrb = C.gen_injfrb_pulse()
-        data_simpulse = C.gen_simpulse()
-        r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
-        r_arr[ii, jj] = r
-        print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
+    r_arr = np.empty([ndm, nwidth])
 
-r_arr = np.array(r_arr)
-fnout = 'corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), widths.min(), width.max())
-np.save(fnout, r_arr)
-#C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
-plt.imshow(np.log10(1-r_arr), aspect='auto', extent=[1e3*widths[0], 1e3*widths[-1], DMs[0], DMs[-1]])
-plt.xlabel('Width [ms]')
-plt.ylabel('DM')
-plt.title('Log of deviation \nfrom perfect correlation: log10(1-r)')
-plt.colorbar()
-plt.show()
+    for ii, dm in enumerate(DMs):
+        for jj, width in enumerate(widths):
+            nt = max(2500, int(3*4183*dm*(1000**-2)/dt))
+            C = CompareInjectors(ntime=nt, dm=dm, width=width, dt=dt)
+            data_injfrb = C.gen_injfrb_pulse()
+            data_simpulse = C.gen_simpulse()
+            r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
+            r_arr[ii, jj] = r
+            print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
+
+    r_arr = np.array(r_arr)
+    fnout = 'corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), widths.min(), width.max())
+    np.save(fnout, r_arr)
+    extent = [np.log10(widths[0]), np.log10(1e3*widths[-1]), DMs[0], DMs[-1]]
+    plt.imshow(np.log10(1-r_arr), aspect='auto', extent=extent)
+    plt.xlabel('Width [ms]')
+    plt.ylabel('DM')
+    plt.title('Log of deviation \nfrom perfect correlation: log10(1-r)')
+    plt.colorbar()
+    plt.show()
+
+gen_corrcoef_grid()
 exit()
 
 def test_gen_injfrb():
