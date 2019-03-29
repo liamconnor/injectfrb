@@ -1,5 +1,8 @@
 import numpy as np
-import matplotlib.pylab as plt
+
+import matplotlib 
+matplotlib.use('Agg', warn=False)
+import matplotlib.pyplot as plt
 
 import simpulse
 import simulate_frb
@@ -120,7 +123,7 @@ def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
             data_simpulse = C.gen_simpulse()
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
             r_arr[ii, jj] = r
-            print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
+            print("r=%.2f nt=%d DM=%.4f w=%.4f" % (r, nt, dm, width))
 
     r_arr = np.array(r_arr)
     fnout = 'corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), widths.min(), width.max())
@@ -175,8 +178,9 @@ def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
 
     return r_arr
 
-gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5)
+gen_corrcoef_grid_dm_width(ndm=20, nwidth=20)
 exit()
+gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5)
 
 def test_gen_corrcoef_grid():
     r_arr = gen_corrcoef_grid(ndm=3, nwidth=3)
