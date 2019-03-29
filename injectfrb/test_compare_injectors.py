@@ -105,8 +105,7 @@ class CompareInjectors:
 
         return np.array(r_arr)
 
-
-def gen_corrcoef_grid(ndm=20, nwidth=20):
+def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
     DMs = np.linspace(10., 2000, ndm)
     widths = np.logspace(-4, -1.5, nwidth)
     dt = 0.001
@@ -137,7 +136,42 @@ def gen_corrcoef_grid(ndm=20, nwidth=20):
 
     return r_arr
 
-gen_corrcoef_grid()
+def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
+    scat_tau_refs = np.logspace(-5, -1, nscat)
+    spec_inds = np.linspace(-5, 5, nspecind)
+    dm = 0.
+    dt = 0.001
+
+    r_arr = np.empty([ndm, nwidth])
+
+    for ii, scat_tau_ref in enumerate(scat_tau_refs):
+        for jj, spec_ind in enumerate(spec_inds):
+            nt = max(2500, int(3*4183*dm*(1000**-2)/dt))
+            C = CompareInjectors(ntime=nt, dm=dm, width=width, 
+                                 dt=dt, scat_tau_ref=scat_tau_ref, 
+                                 spec_ind=spec_ind)
+
+            data_injfrb = C.gen_injfrb_pulse()
+            data_simpulse = C.gen_simpulse()
+            r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
+            r_arr[ii, jj] = r
+            print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
+
+    r_arr = np.array(r_arr)
+    fnout = 'corr_arr_SM=%d-%d_specind=%.2f-%.2f' % (-5, -1, -5, 5)
+    np.save(fnout, r_arr)
+    #extent = [np.log10(widths[0]), np.log10(1e3*widths[-1]), DMs[-1], DMs[0]]
+    plt.imshow(np.log10(1-r_arr), aspect='auto')#, extent=extent)
+    plt.xlabel('specind')
+    plt.ylabel('scat_tau_ref')
+    plt.title('Log of deviation \nfrom perfect correlation: log10(1-r)')
+    plt.colorbar()
+    plt.savefig(fnout+'.pdf')
+    plt.show()
+
+    return r_arr
+
+gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5)
 exit()
 
 def test_gen_corrcoef_grid():
