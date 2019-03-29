@@ -105,6 +105,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     if paramslist is not None:
         params_arr = np.loadtxt(paramslist)
+        dm_max = params_arr[0].max()
+        dm_min = params_arr[0].min()
         if len(params_arr.shape)==1:
             params_arr = params_arr[:, None]
     else:
@@ -137,7 +139,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     ttot = int(N_FRB*chunksize*dt)
 
     timestr = time.strftime("%Y%m%d-%H%M")
-    fn_fil_out = '%s/%s_nfrb%d_%ssec_%s.fil' % (fn_out_dir, simulator, N_FRB, ttot, timestr)
+    fn_fil_out = '%s/%s_nfrb%d_DM%d-%d_%ssec_%s.fil' % (fn_out_dir, simulator, N_FRB, dm_min, dm_max, ttot, timestr)
     fn_params_out = fn_fil_out.strip('.fil') + '.txt'
 
     f_params_out = open(fn_params_out, 'w+')
@@ -222,7 +224,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                                FREQ_REF=freq_ref, scintillate=False)
 
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
-            data_event *= (15.*noise_std/np.sqrt(NFREQ))
+            data_event *= (20.*noise_std/np.sqrt(NFREQ))
             data_event += noise_event
 
         elif simulator=='simpulse':
