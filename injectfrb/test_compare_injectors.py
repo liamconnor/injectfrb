@@ -106,7 +106,7 @@ class CompareInjectors:
         return np.array(r_arr)
 
 
-def gen_corrcoef_grid(ndm=10, nwidth=10):
+def gen_corrcoef_grid(ndm=5, nwidth=7):
     DMs = np.linspace(10., 2000, ndm)
     widths = np.logspace(-4, -1.5, nwidth)
     dt = 0.001
@@ -126,16 +126,23 @@ def gen_corrcoef_grid(ndm=10, nwidth=10):
     r_arr = np.array(r_arr)
     fnout = 'corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), widths.min(), width.max())
     np.save(fnout, r_arr)
-    extent = [np.log10(widths[0]), np.log10(1e3*widths[-1]), DMs[0], DMs[-1]]
+    extent = [np.log10(widths[0]), np.log10(1e3*widths[-1]), DMs[-1], DMs[0]]
     plt.imshow(np.log10(1-r_arr), aspect='auto', extent=extent)
     plt.xlabel('Width [ms]')
     plt.ylabel('DM')
     plt.title('Log of deviation \nfrom perfect correlation: log10(1-r)')
     plt.colorbar()
+    plt.savefig(fnout+'.pdf')
     plt.show()
+
+    return r_arr
 
 gen_corrcoef_grid()
 exit()
+
+def test_gen_corrcoef_grid():
+    r_arr = gen_corrcoef_grid(ndm=3, nwidth=3)
+    assert (r_arr==1).all(), "this"
 
 def test_gen_injfrb():
     C = CompareInjectors()
