@@ -93,22 +93,25 @@ if __name__=='__main__':
     print("Need either a test .fil file or sigproc")
     exit()
 
+  if not os.path.isdir(options.outdir):
+      os.mkdir(options.outdir)
+
+  paramsfile = options.outdir + '/params.txt'
+
   ES = simulate_frb.EventSimulator()
   ES.draw_event_parameters_array(fluence_min=1, dm_min=options.dm_min, dm_max=options.dm_max, 
                                  nfrb=options.nfrb, spec_ind_min=0., spec_ind_max=0., width_mean=.001, 
-                                 width_sig=1, fnout='./test.txt')
+                                 width_sig=1, fnout=paramsfile)
 
-  if not os.path.isdir(options.outdir):
-      os.mkdir(options.outdir)
 
   timestr = time.strftime("%Y%m%d-%H%M")
   os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
             --calc_snr True --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
-            --dm_low %f --dm_high %f --paramslist ./test.txt' \
+            --dm_low %f --dm_high %f --paramslist %s' \
             % (fnfil, options.outdir, options.nfrb, \
               options.upsamp_factor, options.upchan_factor, \
-              options.simulator, options.dm_min, options.dm_max))
+               options.simulator, options.dm_min, options.dm_max, paramsfile))
 
 
 
