@@ -140,7 +140,8 @@ def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
     scat_tau_refs = np.logspace(-5, -1, nscat)
     spec_inds = np.linspace(-5, 5, nspecind)
     dm = 0.
-    dt = 0.001
+    width = 0.001
+    dt = 0.0005
 
     r_arr = np.empty([ndm, nwidth])
 
