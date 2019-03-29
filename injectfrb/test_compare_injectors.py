@@ -137,8 +137,8 @@ def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
     return r_arr
 
 def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
-    scat_tau_refs = np.logspace(-5, -1, nscat)
-    spec_inds = np.linspace(-5, 5, nspecind)
+    scat_tau_refs = np.logspace(-2, -1, nscat)
+    spec_inds = np.linspace(-3, 3, nspecind)
     dm = 0.
     width = 0.001
     dt = 0.0005
@@ -157,7 +157,7 @@ def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
             C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
             r_arr[ii, jj] = r
-            print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
+            print("r=%.2f nt=%d SM=%d specind=%.4f" % (r, nt, scat_tau_ref, spec_ind))
 
 
 
