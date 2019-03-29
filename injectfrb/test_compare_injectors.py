@@ -154,9 +154,12 @@ def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
 
             data_injfrb = C.gen_injfrb_pulse()
             data_simpulse = C.gen_simpulse()
+            C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
             r_arr[ii, jj] = r
             print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
+
+
 
     r_arr = np.array(r_arr)
     fnout = 'corr_arr_SM=%d-%d_specind=%.2f-%.2f' % (-5, -1, -5, 5)
