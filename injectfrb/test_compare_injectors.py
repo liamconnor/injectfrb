@@ -143,7 +143,7 @@ def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
     width = 0.001
     dt = 0.0005
 
-    r_arr = np.empty([ndm, nwidth])
+    r_arr = np.empty([nscat, nspecind])
 
     for ii, scat_tau_ref in enumerate(scat_tau_refs):
         for jj, spec_ind in enumerate(spec_inds):
