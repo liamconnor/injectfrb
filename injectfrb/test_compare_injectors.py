@@ -124,7 +124,8 @@ for ii, dm in enumerate(DMs):
         print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
 
 r_arr = np.array(r_arr)
-np.save('corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), widths.min(), width.max()))
+fnout = 'corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), widths.min(), width.max())
+np.save(fnout, r_arr)
 #C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
 plt.imshow(np.log10(1-r_arr), aspect='auto', extent=[1e3*widths[0], 1e3*widths[-1], DMs[0], DMs[-1]])
 plt.xlabel('Width [ms]')
