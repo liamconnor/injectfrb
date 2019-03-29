@@ -105,8 +105,8 @@ class CompareInjectors:
 
         return np.array(r_arr)
 
-ndm = 5
-nwidth = 7
+ndm = 3
+nwidth = 4
 DMs = np.linspace(10., 2000, ndm)
 widths = np.logspace(-4, -1.5, nwidth)
 dt = 0.001
@@ -124,7 +124,10 @@ for ii, dm in enumerate(DMs):
         print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
 
 #C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
-plt.imshow(np.log10(1-r_arr), aspect='auto', extent=[widths[0], widths[-1], DMs[0], DMs[-1]])
+plt.imshow(np.log10(1-r_arr), aspect='auto', extent=[1e3*widths[0], 1e3*widths[-1], DMs[0], DMs[-1]])
+plt.xlabel('Width [ms]')
+plt.ylabel('DM')
+plt.title('Log of deviation \nfrom perfect correlation: log10(1-r)')
 plt.colorbar()
 plt.show()
 exit()
