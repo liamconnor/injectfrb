@@ -105,9 +105,13 @@ class CompareInjectors:
 
         return np.array(r_arr)
 
-DMs = np.linspace(10., 2000, 5)
-widths = np.linspace(0.0001, 0.05, 5)
+ndm = 5
+nwidth = 5
+DMs = np.linspace(10., 2000, ndm)
+widths = np.linspace(0.0001, 0.05, nwidth)
 dt = 0.001
+
+r_arr = np.empty([ndm, nwidth])
 
 for ii, dm in enumerate(DMs):
     for jj, width in enumerate(widths):
