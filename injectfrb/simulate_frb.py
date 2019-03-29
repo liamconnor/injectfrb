@@ -138,9 +138,9 @@ class Event(object):
         NTIME = data.shape[1]
         tmid = NTIME//2
     
-        if scintillation:
+        if scintillate:
             scint_amp = self.scintillation(freq)
-            
+
 #        self._fluence /= np.sqrt(NFREQ)
         bandwidth = np.abs(freq[-1] - freq[0])
         tau_pix = self._scat_tau_ref/delta_t # scattering time in time samples
