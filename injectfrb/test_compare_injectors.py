@@ -106,9 +106,9 @@ class CompareInjectors:
         return np.array(r_arr)
 
 ndm = 5
-nwidth = 5
+nwidth = 7
 DMs = np.linspace(10., 2000, ndm)
-widths = np.linspace(0.0001, 0.05, nwidth)
+widths = np.logspace(-4, -1.5, nwidth)
 dt = 0.001
 
 r_arr = np.empty([ndm, nwidth])
@@ -121,10 +121,11 @@ for ii, dm in enumerate(DMs):
         data_simpulse = C.gen_simpulse()
         r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
         r_arr[ii, jj] = r
-        print("%.2f %d %d %.4f" % (r, nt, dm, width))
+        print("r=%.2f nt=%d DM=%d w=%.4f" % (r, nt, dm, width))
 
 #C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
-plt.imshow(r_arr, aspect='auto')
+plt.imshow(r_arr, aspect='auto', extent=[widths[0], widths[-1], DMs[0], DMs[-1]])
+plt.colorbar()
 plt.show()
 exit()
 
