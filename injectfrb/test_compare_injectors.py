@@ -108,7 +108,8 @@ class CompareInjectors:
             data1 = np.roll(data_arr1[ii], self.ntime//2-np.argmax(data_arr1[ii]))
             data2 = np.roll(data_arr2[ii], self.ntime//2-np.argmax(data_arr2[ii]))
             r = self.corr_coeff(data1, data2)
-            print("Correlation coefficient: %f at %0.1f MHz" % (r,ff))
+            if ii % 10 == 0:
+                print("Correlation coefficient: %f at %0.1f MHz" % (r,ff))
             r_arr.append(r)
 
         return np.array(r_arr)
@@ -124,7 +125,7 @@ def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
         for jj, width in enumerate(widths):
             nt = max(2500, int(3*4183*dm*(1000**-2)/dt))
             C = CompareInjectors(ntime=nt, dm=dm, width=width, dt=dt)
-            data_injfrb = C.gen_injfrb_pulse()
+            data_injfrb = C.gen_injfrb_pulse(upchan_factor=4, upsamp_factor=4)
             data_simpulse = C.gen_simpulse()
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
             r_arr[ii, jj] = r
