@@ -265,7 +265,7 @@ if __name__=='__main__':
     test_gen_simpulse()
     test_corr_coeff()
     test_plot_comparison()
-    gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5)
+    gen_corrcoef_grid_dm_width(nscat=5, nspecind=5)
 
 
 
