@@ -31,20 +31,27 @@ class CompareInjectors:
         self.freq_ref = freq_ref
         self.freq_arr = np.linspace(freq[0], freq[1], nfreq)
 
-    def gen_injfrb_pulse(self):
+    def gen_injfrb_pulse(self, upchan_factor=1, upsamp_factor=1):
         """ Generate pulse dynamic spectrum 
         with injectfrb.simulate_frb
         """
-        data_bg = np.zeros([self.nfreq, self.ntime])
-        data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=self.nfreq, NTIME=self.ntime,
+        noise_event = np.random.normal(100, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
+        data_bg = np.zeros([upchan_factor*self.nfreq, upsamp_factor*self.ntime])
+
+        data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*self.nfreq, 
+                                     NTIME=upsamp_factor*self.ntime,
                                      sim=True, fluence=self.fluence, 
                                      spec_ind=self.spec_ind, width=self.width, dm=self.dm, 
                                      background_noise=data_bg,
-                                     delta_t=self.dt, plot_burst=False, 
+                                     delta_t=self.dt/upsamp_factor, plot_burst=False, 
                                      freq=(self.freq_hi_MHz, self.freq_lo_MHz), 
                                      FREQ_REF=self.freq_ref, scintillate=False, 
                                      scat_tau_ref=self.scat_tau_ref, 
                                      disp_ind=2.0)
+
+        data_injfrb = data_injfrb.reshape(self.nfreq, upchan_factor, self.ntime, upsamp_factor)
+        data_injfrb = data_injfrb.mean(1).mean(-1)
+
         return data_injfrb
 
     def gen_simpulse(self):
@@ -126,9 +133,9 @@ def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
             print("r=%.2f nt=%d DM=%.4f w=%.4f" % (r, nt, dm, width))
 
     r_arr = np.array(r_arr)
-    fnout = 'corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), widths.min(), width.max())
+    fnout = 'corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), 1e3*widths.min(), 1e3*widths.max())
     np.save(fnout, r_arr)
-    extent = [np.log10(widths[0]), np.log10(1e3*widths[-1]), DMs[-1], DMs[0]]
+    extent = [np.log10(1e3*widths[0]), np.log10(1e3*widths[-1]), DMs[-1], DMs[0]]
     plt.imshow(np.log10(1-r_arr), aspect='auto', extent=extent)
     plt.xlabel('log10(width [ms])')
     plt.ylabel('DM')
@@ -177,10 +184,6 @@ def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
     plt.show()
 
     return r_arr
-
-gen_corrcoef_grid_dm_width(ndm=20, nwidth=20)
-exit()
-gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5)
 
 def test_gen_corrcoef_grid():
     r_arr = gen_corrcoef_grid(ndm=3, nwidth=3)
