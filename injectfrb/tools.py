@@ -2,6 +2,14 @@ import numpy as np
 import glob
 import scipy.signal
 import optparse 
+try:
+    import matplotlib.pyplot as plt
+except:
+    import matplotlib as mpl
+    mpl.use('Agg', warn=False)
+
+# should there maybe be a clustering class
+# and a S/N calculation class?
 
 class AnalyseTriggers:
 
@@ -126,7 +134,7 @@ def dm_range(dm_max, dm_min=5., frac=0.2):
 
     return dm_list
 
-def read_singlepulse(fn, max_rows=None):
+def read_singlepulse(fn, max_rows=None, beam=None):
     """ Read in text file containing single-pulse 
     candidates. Allowed formats are:
     .singlepulse = PRESTO output
@@ -136,6 +144,7 @@ def read_singlepulse(fn, max_rows=None):
 
     max_rows sets the maximum number of 
     rows to read from textfile 
+    beam is the beam number to pick in case of .trigger files
     """
 
     if fn.split('.')[-1] in ('singlepulse', 'txt'):
@@ -156,15 +165,23 @@ def read_singlepulse(fn, max_rows=None):
         if len(A[0]) > 7:
             if len(A[0])==9:
                 # beam batch sample integration_step compacted_integration_steps time DM compacted_DMs SNR
-                dm, sig, tt, downsample = A[:,-3], A[:,-1], A[:, -4], A[:, 3]
+                beamno, dm, sig, tt, downsample = A[:, 0], A[:,-3], A[:,-1], A[:, -4], A[:, 3]
             elif len(A[0])==10:
-                dm, sig, tt, downsample = A[:,-3], A[:,-1], A[:, -5], A[:, 3]
+                beamno, dm, sig, tt, downsample = A[:, 0], A[:,-3], A[:,-1], A[:, -5], A[:, 3]
             else:
                 print("Error: DO NOT RECOGNIZE COLUMNS OF .trigger FILE")
                 return 
         else:
             # beam batch sample integration_step time DM SNR
-            dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
+            beamno, dm, sig, tt, downsample = A[:, 0], A[:,-2], A[:,-1], A[:, -3], A[:, 3]
+        
+        if beam!=None:
+            # pick only the specified beam
+            dm = dm[beamno.astype(int) == beam]
+            sig = sig[beamno.astype(int) == beam]
+            tt = tt[beamno.astype(int) == beam]
+            downsample = downsample[beamno.astype(int) == beam]
+
     elif fn.split('.')[-1]=='cand':
         A = np.genfromtxt(fn, max_rows=max_rows)
 
@@ -190,8 +207,8 @@ def read_singlepulse(fn, max_rows=None):
 
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
-                 sig_max=np.inf, dt = 40.96, delta_nu_MHz=300./1536, 
-                 nu_GHz=1.4, fnout=False):
+                 sig_max=np.inf, dt=2*40.96, delta_nu_MHz=300./1536, 
+                 nu_GHz=1.4, fnout=False, tab=None):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -210,6 +227,8 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         Only read this many rows from raw trigger file 
     fnout : str 
         name of text file to save clustered triggers to 
+    tab : int
+        which TAB to process (0 for IAB)
 
     Returns
     -------
@@ -222,8 +241,14 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ds_cut : ndarray 
         downsample factor array of brightest trigger in each DM/T window 
     """
+    if tab!=None:
+        beam_amber = max(0, tab-1)  # should be 0 for both first TAB and IAB
+    else:
+        beam_amber = None
 
-    dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows)[:4]
+    print('fn, sig_thresh, dm_min, dm_max, t_window, max_rows, t_max, tab')
+    print(fn, sig_thresh, dm_min, dm_max, t_window, max_rows, t_max, tab)
+    dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
     ntrig_orig = len(dm)
 
     bad_sig_ind = np.where((sig < sig_thresh) | (sig > sig_max))[0]
@@ -309,6 +334,85 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         np.savetxt(fnout, clustered_arr) 
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
+
+def plot_tab_summary(fn, ntab=12, suptitle=''):
+    fig, axs = plt.subplots(6, 4, sharex=True, figsize=(12,10))
+    fig.subplots_adjust(hspace=0)
+
+    ntot = 0
+    for tab in range(ntab):
+        try:
+            sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, tab=tab)
+        except(TypeError):
+            print("No triggers from Tab %d" % tab)
+
+        subind1 = (1+tab+4*(tab//4))
+        subind2 = (1+tab+4*(tab//4)+4)
+
+        if subind1 in [1, 9, 17]:
+            yl1 = 'log frac'
+            yl2 = 'Time'
+        else:
+            yl1 = ''
+            yl2 = ''
+
+        ntot += len(sig_cut)
+
+        plt.subplot(6,4,subind1)
+        plt.hist(np.log10(dm_cut), bins=30, log=True, color='C1', alpha=0.5)
+        plt.legend(['TAB %d' % tab], loc=2)
+        plt.yticks([])
+        plt.ylabel(yl1, fontsize=14)
+        plt.xlim(-1, 3.5)
+
+        plt.subplot(6,4,subind2)
+        plt.scatter(np.log10(dm_cut), tt_cut, np.log10(sig_cut), color='k')
+        plt.yticks([])
+        plt.ylabel(yl2, fontsize=14)
+        plt.xlim(-1, 3.5)
+
+        if tab > 7:
+            plt.xlabel('log10(DM)', fontsize=14)
+
+    suptitle_ = suptitle + '\nTotal triggers: %d' % ntot 
+    plt.suptitle(suptitle_, fontsize=20)
+    plt.show()
+
+    fig, axs = plt.subplots(6, 4, sharex=True, figsize=(12,10))
+    fig.subplots_adjust(hspace=0)
+    ntot = 0
+    for tab in range(ntab):
+        try:
+            sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, tab=tab)
+        except(TypeError):
+            print("No triggers from Tab %d" % tab)
+
+        subind1 = 1 + tab #(1+tab+4*(tab//4))
+        subind2 = 1 + tab + 12#(1+tab+4*(tab//4)+4)
+
+        ntot += len(sig_cut)
+
+        plt.subplot(6,4,subind1)
+        plt.hist(np.log2(ds_cut), bins=30, log=True, color='C0', alpha=0.5)
+        plt.legend(['TAB %d' % tab], loc=2)
+        plt.yticks([])
+        plt.ylabel(yl1, fontsize=14)
+
+        if subind1 > 8:
+            plt.xlabel('log2(Width)', fontsize=14)
+
+        plt.subplot(6,4,subind2)
+        plt.hist(np.log10(sig_cut), bins=30, log=True, color='C1', alpha=0.5)
+        plt.yticks([])
+        plt.ylabel(yl2, fontsize=14)
+        plt.legend(['TAB %d' % tab], loc=2)
+
+        if subind2 > 20:
+            plt.xlabel('log10(S/N)', fontsize=14)
+
+    suptitle_ = suptitle + '\nTotal triggers: %d' % ntot 
+    plt.suptitle(suptitle_, fontsize=20)
+    plt.show()
 
 class SNR_Tools:
 
@@ -443,7 +547,7 @@ class SNR_Tools:
 
     def compare_snr(self, fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
                     sig_thresh=5.0, t_window=0.5, max_rows=None,
-                    t_max=np.inf):
+                    t_max=np.inf, tab=None):
         """ Read in two files with single-pulse candidates
         and compare triggers.
 
@@ -476,11 +580,11 @@ class SNR_Tools:
         """
         snr_1, dm_1, t_1, w_1, ind_full_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
-                                    max_rows=max_rows, t_max=t_max)
+                                                         max_rows=max_rows, t_max=t_max, tab=tab)
 
         snr_2, dm_2, t_2, w_2, ind_full_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
-                                    max_rows=max_rows, t_max=t_max)
+                                                         max_rows=max_rows, t_max=t_max, tab=tab)
 
         snr_2_reorder = []
         dm_2_reorder = []
@@ -610,8 +714,6 @@ if __name__=='__main__':
 
     import sys
 
-    fn_1, fn_2 = sys.argv[1], sys.argv[2]
-
     SNRTools = SNR_Tools()
 
     parser = optparse.OptionParser(prog="tools.py", \
@@ -621,7 +723,7 @@ if __name__=='__main__':
 
     parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
                         help="Only process events above >sig_thresh S/N" \
-                                "(Default: 8.0)", default=8.0)
+                                "(Default: 5.0)", default=5.0)
 
     parser.add_option('--save_data', dest='save_data', type='str',
                         help="save each trigger's data. 0=don't save. \
@@ -672,6 +774,12 @@ if __name__=='__main__':
                         help="truth file", 
                         default=None)
 
+    parser.add_option('--tab', dest='tab', type=int, \
+                        help="TAB to process (0 for IAB) (default: 0)", default=0)
+
+    parser.add_option('--plot_both', dest='plot_both', action='store_true', \
+                        help="make plot with both fn1 vs. fn2 and fn2 vs. fn1", default=False)
+
     options, args = parser.parse_args()
     fn_1 = args[0]
     fn_2 = args[1]
@@ -682,14 +790,16 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None, t_max=options.t_max)
-
-        par_1b, par_2b, par_match_arrb, ind_missedb, ind_matchedb = SNRTools.compare_snr(fn_2, fn_1, 
+                                        max_rows=None, t_max=options.t_max,
+                                        tab=options.tab)
+        if options.plot_both is True:
+            par_1b, par_2b, par_match_arrb, ind_missedb, ind_matchedb = SNRTools.compare_snr(fn_2, fn_1, 
                                         dm_min=options.dm_min, 
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None, t_max=options.t_max)                                       
+                                        max_rows=None, t_max=options.t_max, 
+                                        tab=options.tab)                                       
 
     except TypeError:
         print("No matches, exiting")
@@ -706,14 +816,17 @@ if __name__=='__main__':
     mk_plot = True
 
     if options.mk_plot is True:
-        import matplotlib.pyplot as plt
+
         import plotter 
         plotter.plot_comparison(par_1a, par_2a, par_match_arra, ind_misseda, 
                                 figname=options.figname,
                                 algo1=options.algo1, algo2=options.algo2)
-        plotter.plot_comparison(par_1b, par_2b, par_match_arrb, ind_missedb, 
+
+        if options.plot_both is True:
+            plotter.plot_comparison(par_1b, par_2b, par_match_arrb, ind_missedb, 
                                 figname=options.figname, 
                                 algo1=options.algo2, algo2=options.algo1)
+
         if options.truthfile is not None:
             par_1, par_1_truth, par_match_1, ind_misseda, ind_matched1 = \
                                         SNRTools.compare_snr(fn_1, options.truthfile, 
@@ -721,7 +834,8 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None, t_max=options.t_max)
+                                                             max_rows=None, t_max=options.t_max, 
+                                                             tab=options.tab)
 
             par_2, par_2_truth, par_match_2, ind_missedb, ind_matched2 = \
                                         SNRTools.compare_snr(fn_2, options.truthfile, 
@@ -729,7 +843,8 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None, t_max=options.t_max)                                       
+                                                             max_rows=None, t_max=options.t_max, 
+                                                             tab=options.tab)                                       
  
             plotter.plot_against_truth(par_match_1, par_match_2)
 
