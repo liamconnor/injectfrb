@@ -35,9 +35,7 @@ class CompareInjectors:
         """ Generate pulse dynamic spectrum 
         with injectfrb.simulate_frb
         """
-        noise_event = np.random.normal(100, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
         data_bg = np.zeros([upchan_factor*self.nfreq, upsamp_factor*self.ntime])
-
         data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*self.nfreq, 
                                      NTIME=upsamp_factor*self.ntime,
                                      sim=True, fluence=self.fluence, 
