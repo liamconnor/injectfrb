@@ -160,7 +160,7 @@ def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
                                  dt=dt, scat_tau_ref=scat_tau_ref, 
                                  spec_ind=spec_ind)
 
-            data_injfrb = C.gen_injfrb_pulse()
+            data_injfrb = C.gen_injfrb_pulse(upchan_factor=4, upsamp_factor=4)
             data_simpulse = C.gen_simpulse()
             C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
