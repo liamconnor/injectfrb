@@ -273,7 +273,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_rb = data_filobj.data
             data_rb = data_rb[:, :-end_pix].mean(0)
 
-
+            prof_true=None
             #prof_true = prof_true[np.where(prof_true>prof_true.max()*0.01)]
 
             snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
