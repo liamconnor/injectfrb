@@ -287,7 +287,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             plt.subplot(121)
             plt.plot(prof_true)
             plt.subplot(122)
-            plt.imshow(data.data, aspect='auto')
+            plt.imshow(data_filobj.data[:, :-end_pix], aspect='auto')
             plt.show()
 
             snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
