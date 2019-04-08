@@ -224,8 +224,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                                FREQ_REF=freq_ref, scintillate=False)
 
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
-            data_event *= (20.*noise_std/np.sqrt(NFREQ))
-            data_event += noise_event
+            data_event *= (20.*noise_std/np.sqrt(NFREQ)) 
+            #data_event += noise_event
 
         elif simulator=='simpulse':
             # Scaling to match fluence vals with injectfrb
@@ -236,7 +236,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
             data_event = data_event[::-1]
-            print(data_event.max(), fluence)
             data_event *= (10.*noise_std/np.sqrt(NFREQ))
             data_event += noise_event
 
@@ -274,8 +273,12 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_rb = data_filobj.data
             data_rb = data_rb[:, :-end_pix].mean(0)
 
+
+            #prof_true = prof_true[np.where(prof_true>prof_true.max()*0.01)]
+
             snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
-                                        widths=[1, 5, 25, 50, 100, 500, 1000, 2500])
+                                        widths=[1, 5, 25, 50, 100, 500, 1000, 2500], 
+                                        true_filter=prof_true)
 
             local_thresh = 0.
             if snr_max <= local_thresh:

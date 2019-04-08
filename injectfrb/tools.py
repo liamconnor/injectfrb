@@ -467,13 +467,13 @@ class SNR_Tools:
 
         return (data.max() - med) / sig
 
-    def calc_snr_matchedfilter(self, data, widths=None):
+    def calc_snr_matchedfilter(self, data, widths=None, true_filter=None):
         """ Calculate the S/N of pulse profile after 
         trying 9 rebinnings.
 
         Parameters
         ----------
-        arr   : np.array
+        data   : np.array
             (ntime,) vector of pulse profile 
 
         Returns
@@ -492,7 +492,10 @@ class SNR_Tools:
             widths = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500]
 
         for ii in widths:
-            mf = np.ones([ii])
+            if true_filter is None:
+                mf = np.ones([ii])
+            else:
+                mf = true_filter
             data_mf = scipy.correlate(data, mf)
             snr_ = self.calc_snr_amber(data_mf)
 
