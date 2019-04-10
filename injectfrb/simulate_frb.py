@@ -51,7 +51,7 @@ class Event(object):
         return self._t_ref + t
 
     def calc_width(self, dm, freq_c, bw=400.0, NFREQ=1024,
-                   ti=0.001, tsamp=0.001, tau=0):
+                   ti=0.001, tsamp=0.001):
         """ Calculated effective width of pulse 
         including DM smearing, sample time, etc.
         Input/output times are in seconds.
@@ -60,13 +60,15 @@ class Event(object):
         ti *= 1e3
         tsamp *= 1e3
         delta_freq = bw/NFREQ
+        freq_c *= 1e-3 # convert MHz to GHz
 
         # tdm in milliseconds
         tdm = 8.3e-3 * dm * delta_freq / freq_c**3
         # these should in FWHM units, not a sigma 
         tdm /= 2.355
         tsamp /= 2.355
-        tI = np.sqrt(ti**2 + tsamp**2 + tdm**2 + tau**2)
+        # observed width in ms
+        tI = np.sqrt(ti**2 + tsamp**2 + tdm**2)
 
         return 1e-3*tI
 
@@ -129,7 +131,8 @@ class Event(object):
             frequency in MHz
         tau : int 
             scattering time at 1 GHz in samples
-        dm : float
+        t0  : 
+        dm    : float
             dispersion measure 
         tsamp : float 
             sampling time in seconds
@@ -156,7 +159,7 @@ class Event(object):
 
         return pulse_prof
 
-    def add_to_data(self, delta_t, freq, data, scintillate=False):
+    def add_to_data(self, delta_t, freq, data, scintillate=False, conv_dmsmear=False):
         """ Method to add already-dedispersed pulse 
         to background noise data. Includes frequency-dependent 
         width (smearing, scattering, etc.) and amplitude 
@@ -186,14 +189,15 @@ class Event(object):
             # calculate dm-smeared and sampled 
             # pulse width for gaussian profil
 
-            width_ = self.calc_width(self._dm, f*1e-3,#self._f_ref*1e-3, 
+            if conv_dmsmear:
+                # account for DM smearing with boxcar convolution, set to zero here
+                width_ = self.calc_width(0., f,
                                      bw=bandwidth, NFREQ=NFREQ,
-                                     ti=self._width, tsamp=delta_t, tau=0)
-
-            # account for DM smearing with boxcar convolution
-            width_ = self.calc_width(0., f*1e-3,#self._f_ref*1e-3, 
+                                     ti=self._width, tsamp=delta_t)
+            else:
+                width_ = self.calc_width(self._dm, f,
                                      bw=bandwidth, NFREQ=NFREQ,
-                                     ti=self._width, tsamp=delta_t, tau=0)
+                                     ti=self._width, tsamp=delta_t)
 
             index_width = max(1, (np.round((width_/ delta_t))).astype(int))
             tpix = int(self.arrival_time(f) / delta_t)
@@ -202,13 +206,19 @@ class Event(object):
                 # ensure that edges of data are not crossed
                 continue
 
-            pp = self.pulse_profile(NTIME, index_width, f,  
+            if conv_dmsmear:
+                pp = self.pulse_profile(NTIME, index_width, f,  
                                     tau=tau_pix, t0=tpix, tsamp=delta_t, 
                                     delta_freq=bandwidth/NFREQ, dm=self._dm)
+            else:
+                pp = self.pulse_profile(NTIME, index_width, f,  
+                                    tau=tau_pix, t0=tpix, tsamp=delta_t, 
+                                    delta_freq=bandwidth/NFREQ, dm=0.0)
+
             val = pp.copy()
             #val /= (val.max()*stds)
             val *= self._fluence
-            val /= (width_ / delta_t)
+            val /= (self._width / delta_t)
             val = val * (f / self._f_ref) ** self._spec_ind 
             #print(f, val.max(), self._fluence)
 
@@ -217,7 +227,6 @@ class Event(object):
                 val = (0.1 + scint_amp[ii]) * val 
 
             data[ii] += val
-            #print(data[ii].max())
         
     def dm_transform(self, delta_t, data, freq, maxdm=5.0, NDM=50):
         """ Transform freq/time data to dm/time data.
@@ -348,7 +357,7 @@ def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
                 background_noise=None, delta_t=0.00008192,
                 plot_burst=False, freq=(1520., 1220.), 
                 FREQ_REF=1400., scintillate=False,
-                scat_tau_ref=0.0, disp_ind=2.):
+                scat_tau_ref=0.0, disp_ind=2., conv_dmsmear=False):
     """ Simulate fast radio bursts using the EventSimulator class.
 
     Parameters
@@ -369,6 +378,8 @@ def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
         if None, simulates white noise. Otherwise should be an array (NFREQ, NTIME)
     plot_burst : bool 
         generates a plot of the simulated burst
+    conv_dmsmear : bool 
+        if True, convolve Gaussian pulse with boxcar to imitate DM-smearing
 
     Returns
     -------
@@ -407,7 +418,7 @@ def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
     E = Event(t_ref, FREQ_REF, dm, fluence, 
               width, spec_ind, disp_ind, scat_tau_ref)
 
-    E.add_to_data(delta_t, freq, data, scintillate=scintillate)
+    E.add_to_data(delta_t, freq, data, scintillate=scintillate, conv_dmsmear=conv_dmsmear)
 
     if plot_burst:
         subplot(211)

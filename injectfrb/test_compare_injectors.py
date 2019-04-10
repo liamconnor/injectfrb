@@ -125,7 +125,7 @@ def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
         for jj, width in enumerate(widths):
             nt = max(2500, int(3*4183*dm*(1000**-2)/dt))
             C = CompareInjectors(ntime=nt, dm=dm, width=width, dt=dt)
-            data_injfrb = C.gen_injfrb_pulse(upchan_factor=4, upsamp_factor=4)
+            data_injfrb = C.gen_injfrb_pulse(upchan_factor=3, upsamp_factor=3)
             data_simpulse = C.gen_simpulse()
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
             r_arr[ii, jj] = r
