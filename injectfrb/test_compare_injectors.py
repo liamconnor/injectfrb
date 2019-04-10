@@ -1,7 +1,7 @@
 import numpy as np
 
 import matplotlib 
-matplotlib.use('Agg', warn=False)
+#matplotlib.use('Agg', warn=False)
 import matplotlib.pyplot as plt
 
 import simpulse
@@ -31,7 +31,7 @@ class CompareInjectors:
         self.freq_ref = freq_ref
         self.freq_arr = np.linspace(freq[0], freq[1], nfreq)
 
-    def gen_injfrb_pulse(self, upchan_factor=1, upsamp_factor=1):
+    def gen_injfrb_pulse(self, upchan_factor=1, upsamp_factor=1, conv_dmsmear=False):
         """ Generate pulse dynamic spectrum 
         with injectfrb.simulate_frb
         """
@@ -45,7 +45,7 @@ class CompareInjectors:
                                      freq=(self.freq_hi_MHz, self.freq_lo_MHz), 
                                      FREQ_REF=self.freq_ref, scintillate=False, 
                                      scat_tau_ref=self.scat_tau_ref, 
-                                     disp_ind=2.0)
+                                                        disp_ind=2.0, conv_dmsmear=conv_dmsmear)
 
         data_injfrb = data_injfrb.reshape(self.nfreq, upchan_factor, self.ntime, upsamp_factor)
         data_injfrb = data_injfrb.mean(1).mean(-1)
@@ -86,10 +86,10 @@ class CompareInjectors:
 
         plt.subplot(221)
         plt.title(title1)
-        plt.plot(data1[100])
+        plt.plot(data1[-50])
         plt.subplot(222)
         plt.title(title2)
-        plt.plot(data2[100])
+        plt.plot(data2[-50])
         plt.subplot(223)
         plt.imshow(data1, aspect='auto', cmap='Greys')
         plt.subplot(224)
@@ -125,7 +125,7 @@ def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
         for jj, width in enumerate(widths):
             nt = max(2500, int(3*4183*dm*(1000**-2)/dt))
             C = CompareInjectors(ntime=nt, dm=dm, width=width, dt=dt)
-            data_injfrb = C.gen_injfrb_pulse(upchan_factor=3, upsamp_factor=3)
+            data_injfrb = C.gen_injfrb_pulse(upchan_factor=1, upsamp_factor=10, conv_dmsmear=True)
             data_simpulse = C.gen_simpulse()
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
             r_arr[ii, jj] = r
@@ -161,14 +161,12 @@ def gen_corrcoef_grid_spec_scat(nscat=5, nspecind=5):
                                  dt=dt, scat_tau_ref=scat_tau_ref, 
                                  spec_ind=spec_ind)
 
-            data_injfrb = C.gen_injfrb_pulse(upchan_factor=4, upsamp_factor=4)
+            data_injfrb = C.gen_injfrb_pulse(upchan_factor=1, upsamp_factor=10, conv_dmsmear=True)
             data_simpulse = C.gen_simpulse()
             C.plot_comparison(data_injfrb, data_simpulse, title1='', title2='')
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
             r_arr[ii, jj] = r
             print("r=%.2f nt=%d SM=%d specind=%.4f" % (r, nt, scat_tau_ref, spec_ind))
-
-
 
     r_arr = np.array(r_arr)
     fnout = 'corr_arr_SM=%d-%d_specind=%.2f-%.2f' % (-5, -1, -5, 5)
@@ -196,9 +194,9 @@ def test_gen_simpulse():
     C = CompareInjectors()
     data = C.gen_simpulse()
 
-def test_corr_coeff():
+def test_imitate_simpulse():
     C = CompareInjectors(ntime=25000, dm=100., width=0.005, dt=0.001)
-    data_injfrb = C.gen_injfrb_pulse()
+    data_injfrb = C.gen_injfrb_pulse(upchan_factor=10, conv_dmsmear=True)
     data_simpulse = C.gen_simpulse()
     np.save('injarr', data_injfrb)
     np.save('simparr', data_simpulse)
@@ -217,7 +215,7 @@ def test_corr_coeff():
     plt.title('Resolved ' + title, fontsize=12)
 
     C = CompareInjectors(ntime=15000, nfreq=256, dm=500., width=0.0005, dt=0.0005)
-    data_injfrb = C.gen_injfrb_pulse()
+    data_injfrb = C.gen_injfrb_pulse(upchan_factor=10, conv_dmsmear=True)
     data_simpulse = C.gen_simpulse()
     data_injfrb_prof = np.mean(data_injfrb, axis=0)
     data_simpulse_prof = np.mean(data_simpulse, axis=0)
@@ -231,7 +229,7 @@ def test_corr_coeff():
     plt.title('DM-smeared ' + title, fontsize=12)
 
     C = CompareInjectors(ntime=25000, dm=0., width=0.0001, dt=0.005)
-    data_injfrb = C.gen_injfrb_pulse()
+    data_injfrb = C.gen_injfrb_pulse(upchan_factor=10, conv_dmsmear=True)
     data_simpulse = C.gen_simpulse()
     np.save('injarr', data_injfrb)
     np.save('simparr', data_simpulse)
@@ -249,8 +247,8 @@ def test_corr_coeff():
     plt.show()
 
 def test_plot_comparison():
-    C = CompareInjectors(ntime=15000, nfreq=256, dm=500., width=0.0005, dt=0.0005)
-    data_injfrb = C.gen_injfrb_pulse()
+    C = CompareInjectors(ntime=15000, nfreq=256, dm=1000., width=0.0001, dt=0.0005)
+    data_injfrb = C.gen_injfrb_pulse(upsamp_factor=4, conv_dmsmear=True)
     data_simpulse = C.gen_simpulse()
         
     data_injfrb_prof = np.mean(data_injfrb, axis=0)
@@ -262,10 +260,11 @@ def test_plot_comparison():
 
 
 if __name__=='__main__':
-    test_gen_injfrb()
-    test_gen_simpulse()
-    test_corr_coeff()
-    test_plot_comparison()
+#    test_gen_injfrb()
+#    test_gen_simpulse()
+#    test_corr_coeff()
+#    test_plot_comparison()
+    test_imitate_simpulse()
     gen_corrcoef_grid_dm_width(ndm=4, nwidth=4)
     print("Note gen_corrcoef_grid_spec_scat still fails")
 
