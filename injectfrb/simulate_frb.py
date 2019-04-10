@@ -114,16 +114,45 @@ class Event(object):
         prof = 1 / tau_nu * np.exp(-t / tau_nu)
         return prof / prof.max()
 
-    def pulse_profile(self, nt, width, f, tau=0., t0=0.):
+    def pulse_profile(self, nt, width, f, tau=0., 
+                      t0=0., dm=0, delta_freq=300./1536, tsamp=0.00008192):
         """ Convolve the gaussian and scattering profiles 
         for final pulse shape at each frequency channel.
+
+        Parameters
+        ----------
+        nt : int
+            number of time samples
+        width : int 
+            gaussian width in samples
+        f : float 
+            frequency in MHz
+        tau : int 
+            scattering time at 1 GHz in samples
+        dm : float
+            dispersion measure 
+        tsamp : float 
+            sampling time in seconds
+        delta_freq : float 
+            freq channel width in MHz
+    
+        
+        
         """
+        gaus_prof = self.gaussian_profile(nt, width, t0=t0)
+
+        tdm = 8.3e-6 * dm * delta_freq / (f*1e-3)**3
+        tdm_samp = tdm/tsamp
+        dm_smear_prof = np.ones([max(1, np.int(tdm_samp))])
+        pulse_prof = signal.fftconvolve(gaus_prof, dm_smear_prof, mode='same')
+
         tau += 1e-18
         tau_nu = tau * (f / 1000.)**-4.
-        gaus_prof = self.gaussian_profile(nt, width, t0=t0)
         scat_prof = self.scat_profile(nt, f, tau) 
-        pulse_prof = signal.fftconvolve(gaus_prof, scat_prof)[:nt]
-        pulse_prof *= (width/(width + tau_nu))
+        pulse_prof = signal.fftconvolve(pulse_prof, scat_prof)[:nt]
+        pulse_prof /= pulse_prof.max()
+
+        pulse_prof *= (width/np.sqrt(width**2 + tau_nu**2 + tdm_samp**2))
 
         return pulse_prof
 
@@ -155,8 +184,14 @@ class Event(object):
             #     continue
 
             # calculate dm-smeared and sampled 
-            # pulse width for gaussian profile
+            # pulse width for gaussian profil
+
             width_ = self.calc_width(self._dm, f*1e-3,#self._f_ref*1e-3, 
+                                     bw=bandwidth, NFREQ=NFREQ,
+                                     ti=self._width, tsamp=delta_t, tau=0)
+
+            # account for DM smearing with boxcar convolution
+            width_ = self.calc_width(0., f*1e-3,#self._f_ref*1e-3, 
                                      bw=bandwidth, NFREQ=NFREQ,
                                      ti=self._width, tsamp=delta_t, tau=0)
 
@@ -167,8 +202,9 @@ class Event(object):
                 # ensure that edges of data are not crossed
                 continue
 
-            pp = self.pulse_profile(NTIME, index_width, f, 
-                                    tau=tau_pix, t0=tpix)
+            pp = self.pulse_profile(NTIME, index_width, f,  
+                                    tau=tau_pix, t0=tpix, tsamp=delta_t, 
+                                    delta_freq=bandwidth/NFREQ, dm=self._dm)
             val = pp.copy()
             #val /= (val.max()*stds)
             val *= self._fluence
