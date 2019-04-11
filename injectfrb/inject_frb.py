@@ -265,17 +265,20 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         if calc_snr is True:
             #data_filobj.data = copy.copy(data)
-            data_filobj.data = data.copy()
-            data_filobj.dedisperse(dm_)
-            prof_true = data_filobj.data.mean(0)
+            data_filobj.data = data
+            prof_true_filobj = copy.deepcopy(data_filobj)
+            print(data_filobj.dm)
+            prof_true_filobj.dedisperse(dm_)
+            prof_true = prof_true_filobj.data.mean(0)
             prof_true = prof_true[np.where(prof_true>prof_true.max()*0.01)]
 
-#            data[:, offset:offset+NTIME] += noise_event
-
-            data_filobj.data = copy.copy(data)
+            data[:, offset:offset+NTIME] += noise_event
+            print(data_filobj.dm)
+            data_filobj.data = data
             data_filobj.dedisperse(dm_)
+            print(data_filobj.dm)
 
-            end_t = abs(4.15e3*dm_*(freq[0]**-2 - freq[1]**-2))
+            end_t = abs(4.148e3*dm_*(freq[0]**-2 - freq[1]**-2))
             end_pix = int(end_t / dt)
             end_pix_ds = int(end_t / dt / downsamp)
 
