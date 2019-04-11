@@ -270,7 +270,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             prof_true = data_filobj.data.mean(0)
             prof_true = prof_true[np.where(prof_true>prof_true.max()*0.01)]
 
-            data[:, offset:offset+NTIME] += noise_event
+#            data[:, offset:offset+NTIME] += noise_event
 
             data_filobj.data = copy.copy(data)
             data_filobj.dedisperse(dm_)
@@ -288,7 +288,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             plt.subplot(121)
             plt.plot(prof_true)
             plt.subplot(122)
-            plt.plot(data_filobj.data[:, :-end_pix].mean(0))
+            plt.imshow(data_filobj.data[:, :-end_pix], aspect='auto')
             plt.show()
 
             snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
