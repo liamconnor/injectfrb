@@ -58,7 +58,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
-                         simulator='injectfrb', paramslist=None, noise_std=5.):
+                         simulator='injectfrb', paramslist=None, noise_std=5.,
+                         nbit=8):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
 
@@ -94,6 +95,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         subtract zero DM timestream from data 
     clipping : 
         zero out bright events in zero-DM timestream 
+    nbit : int 
+        number of bits in filterbank data
 
     Returns:
     --------
@@ -222,7 +225,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
             data_event *= (20.*noise_std/np.sqrt(NFREQ)) 
-            #data_event += noise_event
 
         elif simulator=='simpulse':
             # Scaling to match fluence vals with injectfrb
@@ -234,7 +236,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
             data_event = data_event[::-1]
             data_event *= (10.*noise_std/np.sqrt(NFREQ))
-#            data_event += noise_event
 
             # [dm, fluence, width, spec_ind, disp_ind, scat_tau_ref]
             params = [dm, fluence, width_sec, spec_ind, 2., scat_tau_ref]
@@ -270,7 +271,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             prof_true = None
 
         data[:, offset:offset+NTIME] += noise_event
-        data[data>255] = 255
+        data[data>(2**nbit-1)] = 2**nbit -1
 
         data_filobj.data = copy.copy(data)
 
