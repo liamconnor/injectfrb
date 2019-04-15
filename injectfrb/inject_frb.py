@@ -54,7 +54,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=1000.0, freq=(1550, 1250), dt=0.00008192,
-                         chunksize=75000, calc_snr=True, start=0, 
+                         chunksize=75000, calc_snr_true_filter=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
@@ -172,8 +172,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if ii==0:
             fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
                                             header, fn_fil_out)
-            if calc_snr is True:
-                dummy_filobj = copy.copy(data_filobj)
 
         # injected pulse time in seconds since start of file
 
@@ -260,56 +258,46 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         # upper frequency
         t0 -= t_delay_mid #hack
 
-        if calc_snr is True:
-            #data_filobj.data = copy.copy(data)
-            data_filobj.data = data
-            prof_true_filobj = copy.deepcopy(data_filobj)
+        #data_filobj.data = copy.copy(data)
+        data_filobj.data = data
 
+        if calc_snr_true_filter:
+            prof_true_filobj = copy.deepcopy(data_filobj)
             prof_true_filobj.dedisperse(dm_)
             prof_true = prof_true_filobj.data.mean(0)
             prof_true = prof_true[np.where(prof_true>prof_true.max()*0.01)]
-
-            data[:, offset:offset+NTIME] += noise_event
-            data[data>255] = 255
-
-            data_filobj.data = copy.copy(data)
-
-#            fig = plt.figure()
-#            plt.subplot(121)
-#            plt.plot(prof_true)
-#            plt.subplot(122)
-#            plt.imshow(data_filobj.data[:, :], aspect='auto')
-#            plt.show()
-
-            data_filobj.dedisperse(dm_)
-
-            end_t = abs(4.148e3*dm_*(freq[0]**-2 - freq[1]**-2))
-            end_pix = int(end_t / dt)
-            end_pix_ds = int(end_t / dt / downsamp)
-
-            data_rb = data_filobj.data
-            data_rb = data_rb[:, :-end_pix].mean(0)
-
-#            prof_true = None
-
-            snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
-                                        widths=[1, 5, 25, 50, 100, 500, 1000, 2500], 
-                                        true_filter=prof_true)
-
-            local_thresh = 0.
-            if snr_max <= local_thresh:
-                print("S/N <= %d: Not writing to file" % local_thresh)
-                kk += 1
-                continue
-                
-            print("S/N: %.2f width_used: %.1f width_tru: %.1f DM: %.1f" 
-                  % (snr_max, width_max, width/delta_t, dm_))
-
-            t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
-            t0 = t0_ind*delta_t #huge hack
         else:
-            snr_max = 10.0
-            width_max = int(width/dt)
+            prof_true = None
+
+        data[:, offset:offset+NTIME] += noise_event
+        data[data>255] = 255
+
+        data_filobj.data = copy.copy(data)
+
+        data_filobj.dedisperse(dm_)
+
+        end_t = abs(4.148e3*dm_*(freq[0]**-2 - freq[1]**-2))
+        end_pix = int(end_t / dt)
+        end_pix_ds = int(end_t / dt / downsamp)
+
+        data_rb = data_filobj.data
+        data_rb = data_rb[:, :-end_pix].mean(0)
+
+        snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
+                                    widths=[1, 5, 25, 50, 100, 500, 1000, 2500], 
+                                    true_filter=prof_true)
+
+        local_thresh = 0.
+        if snr_max <= local_thresh:
+            print("S/N <= %d: Not writing to file" % local_thresh)
+            kk += 1
+            continue
+            
+        print("S/N: %.2f width_used: %.1f width_tru: %.1f DM: %.1f" 
+              % (snr_max, width_max, width/delta_t, dm_))
+
+        t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
+        t0 = t0_ind*delta_t #huge hack
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
@@ -341,7 +329,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         f_params_out.close()
         del data, data_event
 
-    params_full_arr = np.array(params_full_arr)
 
 if __name__=='__main__':
 
