@@ -106,7 +106,7 @@ if __name__=='__main__':
 
   timestr = time.strftime("%Y%m%d-%H%M")
   os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
-            --calc_snr True --gaussian_noise --upchan_factor %d \
+            --calc_snr_true_filter True --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
             --dm_low %f --dm_high %f --paramslist %s' \
             % (fnfil, options.outdir, options.nfrb, \
