@@ -1,7 +1,7 @@
 import numpy as np
 
 import matplotlib 
-#matplotlib.use('Agg', warn=False)
+matplotlib.use('Agg', warn=False)
 import matplotlib.pyplot as plt
 
 import simpulse
@@ -114,7 +114,7 @@ class CompareInjectors:
 
         return np.array(r_arr)
 
-def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
+def gen_corrcoef_grid_dm_width(ndm=10, nwidth=10):
     DMs = np.linspace(10., 2000, ndm)
     widths = np.logspace(-4, -1.5, nwidth)
     dt = 0.001
@@ -125,17 +125,17 @@ def gen_corrcoef_grid_dm_width(ndm=20, nwidth=20):
         for jj, width in enumerate(widths):
             nt = max(2500, int(3*4183*dm*(1000**-2)/dt))
             C = CompareInjectors(ntime=nt, dm=dm, width=width, dt=dt)
-            data_injfrb = C.gen_injfrb_pulse(upchan_factor=1, upsamp_factor=10, conv_dmsmear=True)
+            data_injfrb = C.gen_injfrb_pulse(upchan_factor=5, upsamp_factor=5, conv_dmsmear=False)
             data_simpulse = C.gen_simpulse()
             r = C.corr_coeff(data_injfrb[512], data_simpulse[512])
             r_arr[ii, jj] = r
             print("r=%.2f nt=%d DM=%.4f w=%.4f" % (r, nt, dm, width))
 
     r_arr = np.array(r_arr)
-    fnout = 'corr_arr_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), 1e3*widths.min(), 1e3*widths.max())
+    fnout = 'corr_arr_upsamp5upchan5_DM=%d-%d_w=%.2f-%.2f' % (DMs.min(), DMs.max(), 1e3*widths.min(), 1e3*widths.max())
     np.save(fnout, r_arr)
     extent = [np.log10(1e3*widths[0]), np.log10(1e3*widths[-1]), DMs[-1], DMs[0]]
-    plt.imshow(np.log10(1-r_arr), aspect='auto', extent=extent)
+    plt.imshow(np.log10(1-r_arr), aspect='auto', extent=extent, vmin=-5, vmax=-0.75)
     plt.xlabel('log10(width [ms])')
     plt.ylabel('DM')
     plt.title('Log of deviation \nfrom perfect correlation: log10(1-r)')
@@ -247,8 +247,8 @@ def test_imitate_simpulse():
     plt.show()
 
 def test_plot_comparison():
-    C = CompareInjectors(ntime=15000, nfreq=256, dm=1000., width=0.0001, dt=0.0005)
-    data_injfrb = C.gen_injfrb_pulse(upsamp_factor=4, conv_dmsmear=True)
+    C = CompareInjectors(ntime=15000, nfreq=256, dm=10., width=0.0005, dt=0.0001)
+    data_injfrb = C.gen_injfrb_pulse(upsamp_factor=1, conv_dmsmear=False)
     data_simpulse = C.gen_simpulse()
         
     data_injfrb_prof = np.mean(data_injfrb, axis=0)
@@ -264,8 +264,8 @@ if __name__=='__main__':
 #    test_gen_simpulse()
 #    test_corr_coeff()
 #    test_plot_comparison()
-    test_imitate_simpulse()
-    gen_corrcoef_grid_dm_width(ndm=4, nwidth=4)
+#    test_imitate_simpulse()
+    gen_corrcoef_grid_dm_width(ndm=10, nwidth=10)
     print("Note gen_corrcoef_grid_spec_scat still fails")
 
 
