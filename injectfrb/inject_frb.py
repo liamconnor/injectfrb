@@ -83,8 +83,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         time resolution 
     chunksize : int 
         size of data in samples to read in 
-    calc_snr : bool 
-        calculates S/N of injected pulse 
+    calc_snr_true_filter : bool 
+        calculates S/N of injected pulse using pulse profile 
+        as matched filter
     start : int 
         start sample 
     freq_ref : float 
@@ -174,7 +175,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                             header, fn_fil_out)
 
         # injected pulse time in seconds since start of file
-
         t0_ind = offset+NTIME//2+chunksize*ii 
 #        t0_ind = start + chunksize*ii + offset   # hack because needs to agree with presto  
         t0 = t0_ind*delta_t 
@@ -359,7 +359,7 @@ if __name__=='__main__':
                         help="max dms to use, either float or tuple", 
                       type='float')
 
-    parser.add_option('--calc_snr', action='store_true',
+    parser.add_option('--calc_snr_true_filter', action='store_true',
                         help="calculate S/N of injected pulse", )
     
     parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
@@ -405,7 +405,7 @@ if __name__=='__main__':
     if len(options.dm_list)==1:
         inject_in_filterbank(fn_fil, fn_fil_out, N_FRB=options.nfrb,
                                 NTIME=2**15, rfi_clean=options.rfi_clean,
-                                calc_snr=options.calc_snr, start=0,
+                                calc_snr_true_filter=options.calc_snr_true_filter, start=0,
                                 dm=float(options.dm_list[0]), 
                                 gaussian=options.gaussian, 
                                 gaussian_noise=options.gaussian_noise,
@@ -422,7 +422,7 @@ if __name__=='__main__':
     ncpu = multiprocessing.cpu_count() - 1 
     Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
-                                                        calc_snr=options.calc_snr, start=0,
+                                                        calc_snr_true_filter=options.calc_snr_true_filter, start=0,
                                                         dm=float(x), gaussian=options.gaussian, 
                                                         gaussian_noise=options.gaussian_noise,
                                                         upsamp_factor=options.upsamp_factor,
