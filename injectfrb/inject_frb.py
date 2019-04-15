@@ -155,9 +155,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     reader.print_filheader(header)
     kk = 0
     for ii in xrange(N_FRB):
-        dm = np.random.uniform(10., 2000.)
 
-        np.random.seed(np.random.randint(12312312))
         if gaussian_noise is True:
             NTIME = chunksize
             offset = 0
@@ -194,6 +192,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             disp_ind = params_arr[4,ii]
             scat_tau_ref = 0.
         else:
+            np.random.seed(np.random.randint(12312312))
             fluence = np.random.uniform(0, 1)**(-2/3.)
             dm = np.random.uniform(10., 2000.)
             scat_tau_ref = 0.
@@ -237,7 +236,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
             data_event = data_event[::-1]
             data_event *= (10.*noise_std/np.sqrt(NFREQ))
-            data_event += noise_event
+#            data_event += noise_event
 
             # [dm, fluence, width, spec_ind, disp_ind, scat_tau_ref]
             params = [dm, fluence, width_sec, spec_ind, 2., scat_tau_ref]
@@ -248,15 +247,13 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
                                 (ii+1, N_FRB, dm_, params[2]/dt, offset, simulator))
 
-        data_event[data_event>255] = 255
-#        data_event = data_event.astype(np.uint8)
+#        data_event[data_event>255] = 255
         data[:, offset:offset+NTIME] = data_event
-#        np.save('d%d' % dm, data_event)
 
         #params_full_arr.append(params)
         width = params[2]
         downsamp = max(1, int(width/delta_t))
-        t_delay_mid = 4.15e3*dm_*(freq_ref**-2-freq_arr[0]**-2)
+        t_delay_mid = 4.148e3*dm_*(freq_ref**-2-freq_arr[0]**-2)
         # this is an empirical hack. I do not know why 
         # the PRESTO arrival times are different from t0 
         # by the dispersion delay between the reference and 
@@ -267,16 +264,24 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             #data_filobj.data = copy.copy(data)
             data_filobj.data = data
             prof_true_filobj = copy.deepcopy(data_filobj)
-            print(data_filobj.dm)
+
             prof_true_filobj.dedisperse(dm_)
             prof_true = prof_true_filobj.data.mean(0)
             prof_true = prof_true[np.where(prof_true>prof_true.max()*0.01)]
 
             data[:, offset:offset+NTIME] += noise_event
-            print(data_filobj.dm)
-            data_filobj.data = data
+            data[data>255] = 255
+
+            data_filobj.data = copy.copy(data)
+
+#            fig = plt.figure()
+#            plt.subplot(121)
+#            plt.plot(prof_true)
+#            plt.subplot(122)
+#            plt.imshow(data_filobj.data[:, :], aspect='auto')
+#            plt.show()
+
             data_filobj.dedisperse(dm_)
-            print(data_filobj.dm)
 
             end_t = abs(4.148e3*dm_*(freq[0]**-2 - freq[1]**-2))
             end_pix = int(end_t / dt)
@@ -286,13 +291,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_rb = data_rb[:, :-end_pix].mean(0)
 
 #            prof_true = None
-
-            fig = plt.figure()
-            plt.subplot(121)
-            plt.plot(prof_true)
-            plt.subplot(122)
-            plt.imshow(data_filobj.data[:, :-end_pix], aspect='auto')
-            plt.show()
 
             snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
                                         widths=[1, 5, 25, 50, 100, 500, 1000, 2500], 

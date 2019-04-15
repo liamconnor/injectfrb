@@ -99,7 +99,7 @@ if __name__=='__main__':
   paramsfile = options.outdir + '/params.txt'
 
   ES = simulate_frb.EventSimulator()
-  ES.draw_event_parameters_array(fluence_min=100.0, dm_min=options.dm_min, dm_max=options.dm_max, 
+  ES.draw_event_parameters_array(fluence_min=1, dm_min=options.dm_min, dm_max=options.dm_max, 
                                  nfrb=options.nfrb, spec_ind_min=0., spec_ind_max=0., width_mean=.001, 
                                  width_sig=1, fnout=paramsfile)
 
