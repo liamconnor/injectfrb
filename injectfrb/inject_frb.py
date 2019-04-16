@@ -53,8 +53,8 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
-                         dm=1000.0, freq=(1550, 1250), dt=0.00008192,
-                         chunksize=75000, calc_snr_true_filter=True, start=0, 
+                         dm=1000.0, dt=0.00008192,
+                         chunksize=100000, calc_snr_true_filter=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
@@ -125,6 +125,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     else:
         max_dm = max(dm)
 
+    max_dm = max(max_dm, dm_max)
     t_delay_max = abs(4.148e3*max_dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
     t_delay_max_pix = int(t_delay_max / dt)
 
@@ -246,7 +247,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
                                 (ii+1, N_FRB, dm_, params[2]/dt, offset, simulator))
 
-#        data_event[data_event>255] = 255
         data[:, offset:offset+NTIME] = data_event
 
         #params_full_arr.append(params)
@@ -261,29 +261,43 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         #data_filobj.data = copy.copy(data)
         data_filobj.data = data
+        print(calc_snr_true_filter)
 
-        if calc_snr_true_filter:
+        if calc_snr_true_filter is True:
+            print("Calculating true filter")
             prof_true_filobj = copy.deepcopy(data_filobj)
             prof_true_filobj.dedisperse(dm_)
             prof_true = prof_true_filobj.data.mean(0)
             prof_true = prof_true[np.where(prof_true>prof_true.max()*0.01)]
         else:
+            print("not calcualting")
             prof_true = None
 
         data[:, offset:offset+NTIME] += noise_event
         data[data>(2**nbit-1)] = 2**nbit -1
 
         data_filobj.data = copy.copy(data)
-
         data_filobj.dedisperse(dm_)
 
-        end_t = abs(4.148e3*dm_*(freq[0]**-2 - freq[1]**-2))
+        end_t = abs(4.148e3*dm_*(freq_arr[0]**-2 - freq_arr[-1]**-2))
         end_pix = int(end_t / dt)
         end_pix_ds = int(end_t / dt / downsamp)
 
         data_rb = data_filobj.data
+#        plt.figure()
+#        plt.subplot(121)
+#        plt.imshow(prof_true_filobj.data, aspect='auto')
+#        plt.subplot(122)
+#        plt.imshow(data_rb[:, :-end_pix], aspect='auto')
+#        plt.show()
+#        np.save('data', data_rb)
+#        np.save('mf', prof_true)
+
         data_rb = data_rb[:, :-end_pix].mean(0)
 
+        plt.clf()
+        plt.plot(data_rb)
+        plt.show()
         snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
                                     widths=[1, 5, 25, 50, 100, 500, 1000, 2500], 
                                     true_filter=prof_true)
@@ -361,7 +375,7 @@ if __name__=='__main__':
                       type='float')
 
     parser.add_option('--calc_snr_true_filter', action='store_true',
-                        help="calculate S/N of injected pulse", )
+                        help="calculate S/N of injected pulse with inj signal as filter", default=False)
     
     parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
 
