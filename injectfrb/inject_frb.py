@@ -158,6 +158,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     print("============ HEADER INFORMATION ============")
     reader.print_filheader(header)
     kk = 0
+    samples_counter = 0
+
     for ii in xrange(N_FRB):
 
         if gaussian_noise is True:
@@ -339,6 +341,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             fil_obj = reader.filterbank.FilterbankFile(fn_fil_out, mode='readwrite')
             fil_obj.append_spectra(data.transpose())
 
+        samplecounter += data.shape[1]
+        print('samplecounter %d' % samplecounter)
+        print(chunksize, ii, chunksize*ii)
         f_params_out = open(fn_params_out, 'a+')
         f_params_out.write('%2f   %2f   %5f   %7d   %5f\n' % 
                            (params[0], snr_max, t0, t0_ind, width))
