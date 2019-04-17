@@ -162,7 +162,27 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     for ii in xrange(N_FRB):
 
+        if params_arr is not None:
+            dm = params_arr[0,ii]
+            fluence = params_arr[1,ii]
+            width_sec = 1e3 * params_arr[2,ii]
+            spec_ind = params_arr[3,ii]
+            disp_ind = params_arr[4,ii]
+            scat_tau_ref = 0.
+        else:
+            np.random.seed(np.random.randint(12312312))
+            fluence = np.random.uniform(0, 1)**(-2/3.)
+            dm = np.random.uniform(10., 2000.)
+            scat_tau_ref = 0.
+            spec_ind = 0.
+            width_sec = 2*delta_t
+
         if gaussian_noise is True:
+            t_delay_max = abs(4.148e3*dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
+            t_delay_max_pix = np.int(3*t_delay_max/delta_t)
+            chunksize = 2**np.ceil(np.log2(t_delay_max_pix))
+            print(dm, chunksize)
+
             NTIME = chunksize
             offset = 0
             data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
@@ -186,21 +206,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         if len(data)==0:
             break             
-
-        if params_arr is not None:
-            dm = params_arr[0,ii]
-            fluence = params_arr[1,ii]
-            width_sec = 1e3 * params_arr[2,ii]
-            spec_ind = params_arr[3,ii]
-            disp_ind = params_arr[4,ii]
-            scat_tau_ref = 0.
-        else:
-            np.random.seed(np.random.randint(12312312))
-            fluence = np.random.uniform(0, 1)**(-2/3.)
-            dm = np.random.uniform(10., 2000.)
-            scat_tau_ref = 0.
-            spec_ind = 0.
-            width_sec = 2*delta_t
             
         if gaussian_noise is True:
             if simulator=='injectfrb':
@@ -315,11 +320,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
               % (snr_max, width_max, width/delta_t, dm_))
 
         # Presto dedisperses to top of band, so this is at fmax
-        t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
-        print(t0_ind)
+#        t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
         t0_ind = np.argmax(data_filobj.data.mean(0)) + samplecounter
-        print(t0_ind)
-        
         t0 = t0_ind*delta_t #huge hack
 
         if rfi_clean is True:
@@ -346,8 +348,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             fil_obj.append_spectra(data.transpose())
 
         samplecounter += data.shape[1]
-        print('samplecounter %d' % samplecounter)
-        print(chunksize, ii, chunksize*ii)
+
         f_params_out = open(fn_params_out, 'a+')
         f_params_out.write('%2f   %2f   %5f   %7d   %5f\n' % 
                            (params[0], snr_max, t0, t0_ind, width))
