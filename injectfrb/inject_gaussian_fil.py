@@ -9,6 +9,10 @@ import optparse
 
 import simulate_frb
 
+spec_ind_min = -4
+spec_ind_max = 4
+width_mean = 0.001
+
 filhdr = {'telescope_id': 10,
       'az_start': 0.0,
       'nbits': 8,
@@ -18,10 +22,12 @@ filhdr = {'telescope_id': 10,
       'machine_id': 15,
       'tsamp': 8.192e-05,
       'foff': -0.1953125,
+#      'foff': -0.6510416,
       'src_raj': 181335.2,
       'src_dej': -174958.1,
       'tstart': 58523.3437492,
       'nbeams': 1,
+#      'fch1' : 2000.0,
       'fch1': 1549.5056152,
       'za_start': 0.0,
       'rawdatafile': '',
@@ -66,6 +72,10 @@ if __name__=='__main__':
                     help="max dms to use, either float or tuple", 
                     type='float')
 
+  parser.add_option('--paramsfile', dest='paramsfile', default=None,\
+                    help="txt file with parameters to simulate", 
+                    type="str")
+
   options, args = parser.parse_args()
 
   fnfil = options.fnfil
@@ -96,17 +106,19 @@ if __name__=='__main__':
   if not os.path.isdir(options.outdir):
       os.mkdir(options.outdir)
 
-  paramsfile = options.outdir + '/params.txt'
+  if options.paramsfile is None:
+    paramsfile = options.outdir + '/params.txt'
 
-  ES = simulate_frb.EventSimulator()
-  ES.draw_event_parameters_array(fluence_min=1, dm_min=options.dm_min, dm_max=options.dm_max, 
-                                 nfrb=options.nfrb, spec_ind_min=0., spec_ind_max=0., width_mean=.001, 
+    ES = simulate_frb.EventSimulator()
+    ES.draw_event_parameters_array(fluence_min=1.0, dm_min=options.dm_min, dm_max=options.dm_max, 
+                                 nfrb=options.nfrb, spec_ind_min=spec_ind_min, spec_ind_max=spec_ind_max, width_mean=width_mean, 
                                  width_sig=1, fnout=paramsfile)
-
+  else:
+    paramsfile = options.paramsfile
 
   timestr = time.strftime("%Y%m%d-%H%M")
   os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
-            --calc_snr_true_filter True --gaussian_noise --upchan_factor %d \
+            --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
             --dm_low %f --dm_high %f --paramslist %s' \
             % (fnfil, options.outdir, options.nfrb, \

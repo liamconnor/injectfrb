@@ -54,7 +54,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=1000.0, dt=0.00008192,
-                         chunksize=100000, calc_snr_true_filter=True, start=0, 
+                         chunksize=2, calc_snr_true_filter=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
@@ -78,8 +78,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         apply rfi filters 
     dm : float / tuple 
         dispersion measure(s) to inject FRB with 
-    freq : tuple 
-        (freq_bottom, freq_top) 
     dt : float 
         time resolution 
     chunksize : int 
@@ -109,6 +107,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     if paramslist is not None:
         params_arr = np.loadtxt(paramslist)
+        params_arr = params_arr.transpose()
         dm_max = params_arr[0].max()
         dm_min = params_arr[0].min()
         if len(params_arr.shape)==1:
@@ -189,7 +188,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if params_arr is not None:
             dm = params_arr[0,ii]
             fluence = params_arr[1,ii]
-            width_sec = params_arr[2,ii]
+            width_sec = 1e3 * params_arr[2,ii]
             spec_ind = params_arr[3,ii]
             disp_ind = params_arr[4,ii]
             scat_tau_ref = 0.
@@ -200,7 +199,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             scat_tau_ref = 0.
             spec_ind = 0.
             width_sec = 2*delta_t
-
+            
         if gaussian_noise is True:
             if simulator=='injectfrb':
                 data_event = np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME])
@@ -243,7 +242,12 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         dm_ = params[0]
         params.append(offset)
-        
+
+        tau = scat_tau_ref
+
+        width_obs = np.sqrt(width_sec**2 + delta_t**2 + tau**2)
+        params[2] = width_obs
+
         print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
                                 (ii+1, N_FRB, dm_, params[2]/dt, offset, simulator))
 
@@ -295,9 +299,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         data_rb = data_rb[:, :-end_pix].mean(0)
 
-        plt.clf()
-        plt.plot(data_rb)
-        plt.show()
         snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
                                     widths=[1, 5, 25, 50, 100, 500, 1000, 2500], 
                                     true_filter=prof_true)
@@ -311,6 +312,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         print("S/N: %.2f width_used: %.1f width_tru: %.1f DM: %.1f" 
               % (snr_max, width_max, width/delta_t, dm_))
 
+        # Presto dedisperses to top of band, so this is at fmax
         t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
         t0 = t0_ind*delta_t #huge hack
 
@@ -325,7 +327,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if clipping is not None:
             # Find tsamples > 8sigma and replace them with median
             assert type(clipping) in (float, int), 'clipping must be int or float'
-
+            print("Clipping data")
             data_ts_zerodm = data.mean(0)
             stds, med = sigma_from_mad(data_ts_zerodm)
             ind = np.where(np.absolute(data_ts_zerodm - med) > 8.0*stds)[0]
@@ -338,8 +340,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             fil_obj.append_spectra(data.transpose())
 
         f_params_out = open(fn_params_out, 'a+')
-        f_params_out.write('%2f   %2f   %5f   %7d   %d\n' % 
-                           (params[0], snr_max, t0, t0_ind, width_max))
+        f_params_out.write('%2f   %2f   %5f   %7d   %5f\n' % 
+                           (params[0], snr_max, t0, t0_ind, width))
 
         f_params_out.close()
         del data, data_event
