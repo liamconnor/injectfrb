@@ -316,6 +316,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         # Presto dedisperses to top of band, so this is at fmax
         t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
+        print(t0_ind)
+        t0_ind = np.argmax(data_filobj.data.mean(0)) + samplecounter
+        print(t0_ind)
+        
         t0 = t0_ind*delta_t #huge hack
 
         if rfi_clean is True:
