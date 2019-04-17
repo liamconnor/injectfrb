@@ -158,7 +158,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     print("============ HEADER INFORMATION ============")
     reader.print_filheader(header)
     kk = 0
-    samples_counter = 0
+    samplecounter = 0
 
     for ii in xrange(N_FRB):
 
