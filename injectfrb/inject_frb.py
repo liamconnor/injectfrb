@@ -175,23 +175,23 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             dm = np.random.uniform(10., 2000.)
             scat_tau_ref = 0.
             spec_ind = 0.
-            width_sec = 2*delta_t
+            width_sec = 2*dt
 
         if gaussian_noise is True:
             t_delay_max = abs(4.148e3*dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
-            t_delay_max_pix = np.int(3*t_delay_max/delta_t)
+            t_delay_max_pix = np.int(3*t_delay_max/dt)
             chunksize = 2**np.ceil(np.log2(t_delay_max_pix))
             print(dm, chunksize)
 
             NTIME = chunksize
             offset = 0
-            data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
+            data_filobj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
                                                                       start=0, stop=1)
             data = np.empty([NFREQ, NTIME])
         else:
             # drop FRB in random location in data chunk
             offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
-            data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
+            data_filobj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
                                                                       start=start+chunksize*(ii-kk), stop=chunksize)
             data = data_filobj.data            
 
@@ -202,7 +202,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         # injected pulse time in seconds since start of file
         t0_ind = offset+NTIME//2+chunksize*ii 
 #        t0_ind = start + chunksize*ii + offset   # hack because needs to agree with presto  
-        t0 = t0_ind*delta_t 
+        t0 = t0_ind*dt  
 
         if len(data)==0:
             break             
@@ -226,7 +226,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                                fluence=fluence, spec_ind=spec_ind, width=width_sec,
                                                dm=dm, scat_tau_ref=scat_tau_ref, 
                                                background_noise=data_event, 
-                                               delta_t=delta_t/upsamp_factor, plot_burst=False, 
+                                               delta_t=dt/upsamp_factor, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
                                                FREQ_REF=freq_ref, scintillate=False)
 
@@ -240,7 +240,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                            dm, scat_tau_ref, width_sec, fluence,
                            spec_ind, 0.)
 
-            sp.add_to_timestream(data_event, 0.0, NTIME*delta_t)
+            sp.add_to_timestream(data_event, 0.0, NTIME*dt)
             data_event = data_event[::-1]
             data_event *= (10.*noise_std/np.sqrt(NFREQ))
 
@@ -252,7 +252,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         tau = scat_tau_ref
 
-        width_obs = np.sqrt(width_sec**2 + delta_t**2 + tau**2)
+        width_obs = np.sqrt(width_sec**2 + dt**2 + tau**2)
         params[2] = width_obs
 
         print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
@@ -262,7 +262,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         #params_full_arr.append(params)
         width = params[2]
-        downsamp = max(1, int(width/delta_t))
+        downsamp = max(1, int(width/dt))
         t_delay_mid = 4.148e3*dm_*(freq_ref**-2-freq_arr[0]**-2)
         # this is an empirical hack. I do not know why 
         # the PRESTO arrival times are different from t0 
@@ -317,15 +317,15 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             continue
             
         print("S/N: %.2f width_used: %.1f width_tru: %.1f DM: %.1f" 
-              % (snr_max, width_max, width/delta_t, dm_))
+              % (snr_max, width_max, width/dt, dm_))
 
         # Presto dedisperses to top of band, so this is at fmax
 #        t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
         t0_ind = np.argmax(data_filobj.data.mean(0)) + samplecounter
-        t0 = t0_ind*delta_t #huge hack
+        t0 = t0_ind*dt #huge hack
 
         if rfi_clean is True:
-            data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
+            data = rfi_test.apply_rfi_filters(data.astype(np.float32), dt)
 
         if subtract_zero is True:
             print("Subtracting zero DM")
