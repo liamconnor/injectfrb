@@ -180,9 +180,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if gaussian_noise is True:
             t_delay_max = abs(4.148e3*dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
             t_delay_max_pix = np.int(3*t_delay_max/dt)
-            t_chunksize_min = 0.25
+            t_chunksize_min = 0.5
             chunksize = 2**np.ceil(np.log2(t_delay_max_pix))
-            chunksize = np.int(min(t_chunksize_min/dt, chunksize))
+            chunksize = np.int(max(t_chunksize_min/dt, chunksize))
             print(dm, chunksize)
 
             NTIME = chunksize
