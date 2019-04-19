@@ -259,6 +259,24 @@ class Event(object):
 
         return data_full
 
+def dm_transform(data, dt, freqs, ref_freq=np.inf, dm_min=-10, dm_max=10, ndm=50):
+    """ Transform freq/time data to dm/time data.
+    """
+    import spectra 
+    nt = data.shape[1]
+    ref_freq = 0.5*(freqs[0]+freqs[-1])
+
+    datafilobj = spectra.Spectra(freqs, dt, data, starttime=0, dm=0)
+
+    dms = np.linspace(dm_min, dm_max, 250)
+    dmtarr = np.empty([250, nt])
+
+    for ii, dm in enumerate(dms):
+        datafilobj.dedisperse(dm, ref_freq=ref_freq)
+        dmtarr[ii] = datafilobj.data.mean(0)
+
+    return dmtarr
+
 class EventSimulator():
     """Generates simulated fast radio bursts.
     Events occurrences are drawn from a Poissonian distribution.
@@ -436,5 +454,5 @@ def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
         subplot(313)
         plot(data.reshape(-1, ntime).mean(0))
 
-    return data, [dm, fluence, E.width_max, spec_ind, disp_ind, scat_tau_ref], E
+    return data, [dm, fluence, E.width_max, spec_ind, disp_ind, scat_tau_ref]
 
