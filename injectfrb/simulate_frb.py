@@ -37,6 +37,7 @@ class Event(object):
         self._spec_ind = spec_ind
         self._disp_ind = disp_ind
         self._scat_tau_ref = scat_tau_ref
+        self.width_max = width
 
     def disp_delay(self, f, _dm, _disp_ind=-2.):
         """ Calculate dispersion delay in seconds for 
@@ -51,7 +52,7 @@ class Event(object):
         return self._t_ref + t
 
     def calc_width(self, dm, freq_c, bw=400.0, NFREQ=1024,
-                   ti=0.001, tsamp=0.001):
+                   ti=0.001, tsamp=0.001, tau=0.0):
         """ Calculated effective width of pulse 
         including DM smearing, sample time, etc.
         Input/output times are in seconds.
@@ -67,8 +68,9 @@ class Event(object):
         # these should in FWHM units, not a sigma 
         tdm /= 2.355
         tsamp /= 2.355
+        tau *= 1e3
         # observed width in ms
-        tI = np.sqrt(ti**2 + tsamp**2 + tdm**2)
+        tI = np.sqrt(ti**2 + tsamp**2 + tdm**2 + tau**2)
 
         return 1e-3*tI
 
@@ -227,8 +229,13 @@ class Event(object):
                 val = (0.1 + scint_amp[ii]) * val 
 
             data[ii] += val
+
+        width_max = self.calc_width(self._dm, freq.max(),
+                                    bw=bandwidth, NFREQ=NFREQ,
+                                    ti=self._width, tsamp=delta_t, tau=self._scat_tau_ref)
+        self.width_max = width_max
         
-    def dm_transform(self, delta_t, data, freq, maxdm=5.0, NDM=50):
+    def dm_transform(self, delta_t, data, freq, dm_max=10, dm_min=-10, NDM=50):
         """ Transform freq/time data to dm/time data.
         """
     
@@ -236,13 +243,14 @@ class Event(object):
             NFREQ = data.shape[0]
             freq = np.linspace(freq[0], freq[1], NFREQ) 
 
-        dm = np.linspace(-maxdm, maxdm, NDM)
+        dm = np.linspace(dm_min, dm_max, NDM)
         ndm = len(dm)
         ntime = data.shape[-1]
 
         data_full = np.zeros([ndm, ntime])
 
         for ii, dm in enumerate(dm):
+            print(dm)
             for jj, f in enumerate(freq):
                 self._dm = dm
                 tpix = int(self.arrival_time(f) / delta_t)
@@ -339,12 +347,13 @@ class EventSimulator():
         fluence = fluence_min*np.random.uniform(0, 1, nfrb)**(-2/3.)
         spec_ind = np.random.uniform(spec_ind_min, spec_ind_max, nfrb)
         disp_ind = 2.*np.ones([nfrb])
-        width = np.random.lognormal(np.log(width_mean), np.log(width_sig), nfrb)
+        width = np.random.lognormal(np.log(width_mean), width_sig, nfrb)
 
         if fnout!=None:
-            params_arr = np.concatenate([dm, fluence, width, spec_ind, disp_ind])
+            params_arr = np.concatenate([dm, fluence, 1e3*width, spec_ind, disp_ind])
             params_arr.shape = (5, nfrb)
-            np.savetxt(fnout, params_arr)
+            params_arr = params_arr.transpose()
+            np.savetxt(fnout, params_arr, fmt='%.4f')
 
         return dm, fluence, width, spec_ind, disp_ind
 
@@ -427,5 +436,5 @@ def gen_simulated_frb(NFREQ=1536, NTIME=2**10, sim=True, fluence=1.0,
         subplot(313)
         plot(data.reshape(-1, ntime).mean(0))
 
-    return data, [dm, fluence, width, spec_ind, disp_ind, scat_tau_ref]
+    return data, [dm, fluence, E.width_max, spec_ind, disp_ind, scat_tau_ref], E
 
