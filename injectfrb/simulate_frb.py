@@ -161,7 +161,8 @@ class Event(object):
 
         return pulse_prof
 
-    def add_to_data(self, delta_t, freq, data, scintillate=False, conv_dmsmear=False):
+    def add_to_data(self, delta_t, freq, data, 
+                    scintillate=False, conv_dmsmear=False):
         """ Method to add already-dedispersed pulse 
         to background noise data. Includes frequency-dependent 
         width (smearing, scattering, etc.) and amplitude 
