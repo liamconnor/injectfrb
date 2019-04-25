@@ -60,6 +60,56 @@ def get_multibeam_triggers(times, beamno, t_window=0.5):
 
     return ntrig_perbeam
 
+def dedisperse(data, dm, dt=8.192e-5, freq=(1550, 1250), freq_ref=None):
+    data = data.copy()
+    
+    nfreq, ntime = data.shape[0], data.shape[1]
+
+    freqs = np.linspace(freq[0], freq[-1], nfreq)
+
+    if freq_ref is None:
+        freq_ref = freqs.max()
+
+    tdelay = 4.148e3*dm*(freqs**-2 - freq_ref**-2)
+    ntime = len(data[0])
+
+    maxind_arr = []
+
+    for ii, f in enumerate(freqs):
+        data[ii] = np.roll(data[ii], -np.int(tdelay[ii]/dt))
+
+    return data
+
+def cleandata(data, threshold=3.0):
+    """ Take filterbank object and mask 
+    RFI time samples with average spectrum.
+
+    Parameters:
+    ----------
+    data : np.ndarray
+        (nfreq, ntime) array
+    threshold : float 
+        units of sigma
+
+    Returns:
+    -------
+    cleaned filterbank object
+    """
+    logging.info("Cleaning RFI")
+
+    assert len(data.shape)==2, "Expected (nfreq, ntime) array"
+
+    dtmean = np.mean(data, axis=-1)
+    dfmean = np.mean(data, axis=0)
+    stdevf = np.std(dfmean)
+    medf = np.median(dfmean)
+    maskf = np.where(np.abs(dfmean - medf) > threshold*stdevf)[0]        
+
+    # replace with mean spectrum
+    data[:, maskf] = dtmean[:, None]*np.ones(len(maskf))[None]
+
+    return data
+
 def group_dm_time_beam(fdir, fnout=None, trigname='cand'):
     """ Go through all compound beams (CB) in 
     directory fdir, group in time/DM, then 
@@ -175,7 +225,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
             # beam batch sample integration_step time DM SNR
             beamno, dm, sig, tt, downsample = A[:, 0], A[:,-2], A[:,-1], A[:, -3], A[:, 3]
         
-        if beam!=None:
+        if beam is not None:
             # pick only the specified beam
             dm = dm[beamno.astype(int) == beam]
             sig = sig[beamno.astype(int) == beam]
@@ -190,6 +240,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
+        print(dm, tt)
         downsample = 2**log_2_downsample
         try:
             beamno = A[:, 9]
@@ -208,7 +259,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
                  sig_max=np.inf, dt=2*40.96, delta_nu_MHz=300./1536, 
-                 nu_GHz=1.4, fnout=False, tab=None):
+                 nu_GHz=1.4, fnout=False, tab=None, dm_width_filter=False):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -241,14 +292,19 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ds_cut : ndarray 
         downsample factor array of brightest trigger in each DM/T window 
     """
-    if tab!=None:
-        beam_amber = max(0, tab-1)  # should be 0 for both first TAB and IAB
+    if tab is not None:
+        beam_amber = tab
     else:
         beam_amber = None
 
-    print('fn, sig_thresh, dm_min, dm_max, t_window, max_rows, t_max, tab')
-    print(fn, sig_thresh, dm_min, dm_max, t_window, max_rows, t_max, tab)
-    dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
+    if type(fn)==str:
+        dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
+    elif type(fn)==np.ndarray:
+        dm, sig, tt, downsample = fn[:,0], fn[:,1], fn[:,2], fn[:,3]
+    else:
+        print("Wrong input type. Expected string or nparray")
+        return [],[],[],[],[]
+
     ntrig_orig = len(dm)
 
     bad_sig_ind = np.where((sig < sig_thresh) | (sig > sig_max))[0]
@@ -257,7 +313,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     dm = np.delete(dm, bad_sig_ind)
     downsample = np.delete(downsample, bad_sig_ind)
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
-    
+
     if len(tt)==0:
         print("Returning None: time array is empty")
         return 
@@ -316,11 +372,13 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
 
     rm_ii = []
-    for ii in xrange(len(ds_cut)):        
-        tdm = 8.3 * delta_nu_MHz / nu_GHz**3 * dm_cut[ii] # microseconds
 
-        if ds_cut[ii]*dt < (0.5*(dt**2 + tdm**2)**0.5):
-            rm_ii.append(ii)
+    if dm_width_filter:
+        for ii in xrange(len(ds_cut)):        
+            tdm = 8.3 * delta_nu_MHz / nu_GHz**3 * dm_cut[ii] # microseconds#
+
+            if ds_cut[ii]*dt < (0.5*(dt**2 + tdm**2)**0.5):
+                rm_ii.append(ii)
 
     dm_cut = np.delete(dm_cut, rm_ii)
     tt_cut = np.delete(tt_cut, rm_ii)
@@ -334,6 +392,27 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         np.savetxt(fnout, clustered_arr) 
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
+
+def add_tab_col(fdir, fnout='out'):
+    """ Take list of .trigger files for 
+    all TABs, concanetate into single .trigger
+    file with correct TAB column.
+    """
+    fl = glob.glob(fdir)
+    fl.sort()
+    trigg_arr_full = []
+    
+    ext = fl[0].split('.')[-1]
+    assert ext=='trigger', 'expected an amber output file .trigger'
+
+    for ff in fl:
+        tab = int(ff.split('CB')[-1].split('_')[1][:2])
+        trigg_arr = np.loadtxt(ff)
+        trigg_arr[:, 0] = tab
+        trigg_arr_full.append(trigg_arr)
+    
+    trigg_arr_full = np.concatenate(trigg_arr_full)
+    np.savetxt(fnout+'.'+ext, trigg_arr_full)
 
 def plot_tab_summary(fn, ntab=12, suptitle=''):
     fig, axs = plt.subplots(6, 4, sharex=True, figsize=(12,10))
@@ -467,13 +546,13 @@ class SNR_Tools:
 
         return (data.max() - med) / sig
 
-    def calc_snr_matchedfilter(self, data, widths=None, true_filter=None):
+    def calc_snr_matchedfilter(self, data, widths=None):
         """ Calculate the S/N of pulse profile after 
         trying 9 rebinnings.
 
         Parameters
         ----------
-        data   : np.array
+        arr   : np.array
             (ntime,) vector of pulse profile 
 
         Returns
@@ -808,7 +887,6 @@ if __name__=='__main__':
         print("No matches, exiting")
         exit()
         
-
     print('\nFound %d common trigger(s)' % par_match_arra.shape[1])
 
     snr_1 = par_match_arra[0, :, 0]
