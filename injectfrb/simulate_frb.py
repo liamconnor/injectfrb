@@ -260,7 +260,9 @@ class Event(object):
 
         return data_full
 
-def dm_transform(data, dt, freqs, ref_freq=np.inf, dm_min=-10, dm_max=10, ndm=50):
+
+def dm_transform_filobj(data, dt, freqs, ref_freq=np.inf, 
+                 dm_min=-10, dm_max=10, ndm=50):
     """ Transform freq/time data to dm/time data.
     """
     import spectra 
