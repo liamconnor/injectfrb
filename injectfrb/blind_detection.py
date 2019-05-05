@@ -223,7 +223,17 @@ class DetectionDecision():
             plt.fill_between(times, dm_low[ii].repeat(10), dm_high[ii].repeat(10), alpha=0.4)
 
 
+    def find_parameter_guess(self, dm_arr, t_arr, snr_arr, 
+                             dm_err=0.5, t_err=1.):
+        print(self._dm)
+        print(self._t0)
+        dm_stat = np.abs(1.-dm_arr/self._dm)
+        t_stat = np.abs(self._t0 - t_arr)
 
+        ind = np.where((dm_stat<dm_err) & (t_stat<t_err))[0]
+        snr_max_ind = np.argmax(snr_arr[ind])
+
+        return snr_max_ind
 
 
 
