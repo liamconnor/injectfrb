@@ -80,6 +80,27 @@ def dedisperse(data, dm, dt=8.192e-5, freq=(1550, 1250), freq_ref=None):
 
     return data
 
+def dm_transform(data, freq, dt=8.192e-5, dm_max=10, dm_min=-10, ndm=50, freq_ref=None):
+    """ Transform freq/time data to dm/time data.
+    """
+
+    if len(freq)<3:
+        NFREQ = data.shape[0]
+        freq = np.linspace(freq[0], freq[1], NFREQ) 
+
+    dms = np.linspace(dm_min, dm_max, ndm)
+    ntime = data.shape[-1]
+
+    data_full = np.zeros([ndm, ntime])
+    times = np.linspace(-0.5*ntime*dt, 0.5*ntime*dt, ntime)
+
+    for ii, dm in enumerate(dms):
+        data_full[ii] = np.mean(dedisperse(data, dm, freq=(freq[0], freq[-1]), 
+                               freq_ref=freq_ref), axis=0)
+
+    return data_full, dms, times
+
+
 def cleandata(data, threshold=3.0):
     """ Take filterbank object and mask 
     RFI time samples with average spectrum.
@@ -120,7 +141,6 @@ def group_dm_time_beam(fdir, fnout=None, trigname='cand'):
 
     times_full, beamno_full, dm_full = [], [], []
     for fn in flist:
-        print(fn)
         try:
             CB = float(fn.split('CB')[-1][:2])
         except:
@@ -240,7 +260,6 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
-        print(dm, tt)
         downsample = 2**log_2_downsample
         try:
             beamno = A[:, 9]
@@ -546,7 +565,7 @@ class SNR_Tools:
 
         return (data.max() - med) / sig
 
-    def calc_snr_matchedfilter(self, data, widths=None):
+    def calc_snr_matchedfilter(self, data, widths=None, true_filter=None):
         """ Calculate the S/N of pulse profile after 
         trying 9 rebinnings.
 
@@ -575,6 +594,7 @@ class SNR_Tools:
                 mf = np.ones([ii])
             else:
                 mf = true_filter
+
             data_mf = scipy.correlate(data, mf)
             snr_ = self.calc_snr_amber(data_mf)
 

@@ -178,7 +178,6 @@ class DetectionDecision():
                                            freq_ref=freq_ref)
 
         mm = np.argmax(data_event_copy.mean(0))             
-        print(mm, data_event_copy.shape)
         data_event_copy = data_event_copy[:, mm-500:mm+500]                                                                        
         dmtarr, dms, times = tools.dm_transform(data_event_copy, self._freqs, dt=self._dt,                                                                           
                                     freq_ref=freq_ref,                                                                       
@@ -212,6 +211,10 @@ class DetectionDecision():
             times = np.linspace(t_arr[ii]-t_err[ii], t_arr[ii]+t_err[ii], 10)
 
             plt.fill_between(times, dm_low[ii].repeat(10), dm_high[ii].repeat(10), alpha=0.4)
+
+        plt.xlabel('Time [s]', fontsize=15)
+        plt.ylabel('DM [pc cm**-3]', fontsize=15)
+        plt.show()
 
 
     def find_parameter_guess(self, dm_arr, t_arr, snr_arr, 
@@ -278,18 +281,30 @@ def get_decision_array(fn_truth, fn_cand, dmtarr_function='box'):
 
     decision_arr = []
 
-    for ii in range(len(dmt)):
-        D = DetectionDecision(dmt[ii], tt[ii])
+    for ii in range(len(dm_truth)):
+        D = DetectionDecision(dm_truth[ii], t_truth[ii])
         dm_guess, t_guess, sig_guess = D.find_parameter_guess(dm_cand, 
                                         t_cand, sig_cand, dm_err=0.5, t_err=1.)
 
         if dm_guess==[]:
+            decision_arr.append(0)
             continue
 
-        decision = int(D.dm_time_contour_decision(dm_guess, t_guess, 
+        decision = 1+int(D.dm_time_contour_decision(dm_guess, t_guess, 
                                                   simulator='injectfrb', 
                                                   dmtarr_function=dmtarr_function))
         decision_arr.append(decision)
+    
+    decision_arr  = np.array(decision_arr)
+
+    n_no_guess = np.sum(decision_arr==0)
+    n_wrong_guess = np.sum(decision_arr==1)
+    n_correct_guess = np.sum(decision_arr==2)
+    ntrig = len(decision_arr)
+
+    print("No guess: %d/%d" % (n_no_guess, ntrig))
+    print("Wrong guess: %d/%d" % (n_wrong_guess, ntrig))
+    print("Correct guess: %d/%d" % (n_correct_guess, ntrig))
 
     return decision_arr
 
