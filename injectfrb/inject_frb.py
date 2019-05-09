@@ -6,7 +6,6 @@
 * get arrival time without argmax!
 
 """
-
 import time
 
 import random
@@ -147,7 +146,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     fn_params_out = fn_fil_out.strip('.fil') + '.txt'
 
     f_params_out = open(fn_params_out, 'w+')
-    f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact\n')
+    f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact    Width    Spec_ind    Scat_tau_ref\n')
     f_params_out.close()
 
     if gaussian==True:
@@ -165,7 +164,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if params_arr is not None:
             dm = params_arr[0,ii]
             fluence = params_arr[1,ii]
-            width_sec = 1e3 * params_arr[2,ii]
+            width_sec = params_arr[2,ii]
             spec_ind = params_arr[3,ii]
             disp_ind = params_arr[4,ii]
             scat_tau_ref = 0.
@@ -183,7 +182,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             t_chunksize_min = 1.0
             chunksize = 2**np.ceil(np.log2(t_delay_max_pix))
             chunksize = np.int(max(t_chunksize_min/dt, chunksize))
-            print(dm, chunksize)
 
             NTIME = chunksize
             offset = 0
@@ -252,9 +250,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         dm_ = params[0]
         params.append(offset)
 
-        tau = scat_tau_ref
-
-        width_obs = np.sqrt(width_sec**2 + dt**2 + tau**2)
+        width_obs = np.sqrt(width_sec**2 + dt**2 + scat_tau_ref**2)
         params[2] = width_obs
 
         print("%d/%d Injecting with DM:%d width_samp: %.1f offset: %d using %s" % 
@@ -274,39 +270,41 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         #data_filobj.data = copy.copy(data)
         data_filobj.data = data
-        print(calc_snr_true_filter)
 
         if calc_snr_true_filter is True:
             print("Calculating true filter")
             prof_true_filobj = copy.deepcopy(data_filobj)
-            prof_true_filobj.dedisperse(dm_)
-            prof_true = prof_true_filobj.data.mean(0)
+            prof_true_filobj.dedisperse(dm_, ref_freq=freq_ref)
+            prof_true = np.mean(prof_true_filobj.data, 0)
             prof_true = prof_true[np.where(prof_true>prof_true.max()*0.01)]
+            sig_total = np.sqrt((prof_true**2).sum())
         else:
-            print("not calcualting")
+            print("not calculating")
             prof_true = None
 
         data[:, offset:offset+NTIME] += noise_event
-        data[data>(2**nbit-1)] = 2**nbit -1
+        data[data>(2**nbit-1)] = 2**nbit-1
 
         data_filobj.data = copy.copy(data)
-        data_filobj.dedisperse(dm_)
+        data_filobj.dedisperse(dm_, ref_freq=freq_ref)
 
-        end_t = abs(4.148e3*dm_*(freq_arr[0]**-2 - freq_arr[-1]**-2))
+        start_t = abs(4.148e3*dm_*(freq_arr[0]**-2 - freq_ref**-2))
+        start_pix = int(start_t/dt)
+        end_t = abs(4.148e3*dm_*(freq_arr[-1]**-2 - freq_ref**-2))
         end_pix = int(end_t / dt)
-        end_pix_ds = int(end_t / dt / downsamp)
 
         data_rb = data_filobj.data
+
 #        plt.figure()
 #        plt.subplot(121)
 #        plt.imshow(prof_true_filobj.data, aspect='auto')
 #        plt.subplot(122)
-#        plt.imshow(data_rb[:, :-end_pix], aspect='auto')
+#        plt.plot(data_rb.mean(0))
+#        plt.axvline(len(data_rb[0])-end_pix, color='red')
+#        plt.axvline(start_pix, color='red')
 #        plt.show()
-#        np.save('data', data_rb)
-#        np.save('mf', prof_true)
 
-        data_rb = data_rb[:, :-end_pix].mean(0)
+        data_rb = data_rb[:, start_pix:-end_pix].mean(0)
 
         snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
                                     widths=[1, 5, 25, 50, 100, 500, 1000, 2500], 
@@ -350,10 +348,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             fil_obj.append_spectra(data.transpose())
 
         samplecounter += data.shape[1]
-
         f_params_out = open(fn_params_out, 'a+')
-        f_params_out.write('%2f   %2f   %5f   %7d   %5f\n' % 
-                           (params[0], snr_max, t0, t0_ind, width))
+        f_params_out.write('%2f   %2f   %5f   %7d   %d   %5f   %2f   %5f\n ' % 
+                           (params[0], snr_max, t0, t0_ind, downsamp, width, spec_ind, scat_tau_ref))
 
         f_params_out.close()
         del data, data_event
