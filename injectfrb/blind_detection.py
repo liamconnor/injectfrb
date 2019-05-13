@@ -350,7 +350,6 @@ if __name__=='__main__':
     parser.add_option('--mk_plot', action='store_true',
                         help="Plot each candidate guess", default=False)
 
-
     parser.add_option('--dm_high', dest='dm_high', default=None,\
                         help="max dms to use, either float or tuple", 
                       type='float')
@@ -361,13 +360,9 @@ if __name__=='__main__':
     parser.add_option('--dmtarr_function', dest='dmtarr_function', 
                         help="Function to determine DM/time boundary (box, gaussian, bowtie)", default='gaussian')
 
-    parser.add_option('--upsamp_factor', dest='upsamp_factor', type='int', \
-                        help="Upsample data by this factor before injecting. Downsample after.", \
-                        default=2)
-
-    parser.add_option('--paramslist', dest='paramslist', type='str', \
-                        help="path to txt file containing FRB parameters", \
-                        default=None)
+    parser.add_option('--fnout', dest='fnout', type='str', \
+                        help="output text file", \
+                        default='output.txt')
 
     options, args = parser.parse_args()
     fn_truth = args[0]
@@ -397,9 +392,10 @@ if __name__=='__main__':
         header += 'code%d ' % ii
         fmt += '%d    '
 
-    B = np.concatenate(dec_arr_full).reshape(-1, ntrig).transpose()
-    Z = np.concatenate([fn_truth_arr, B], axis=1)
-    np.savetxt('here.txt', Z, fmt=fmt, header=header)
+    dec_arr_full = np.concatenate(dec_arr_full).reshape(-1, ntrig).transpose()
+    # Add the new result columns to truth txt file
+    results_arr = np.concatenate([fn_truth_arr, dec_arr_full], axis=1)
+    np.savetxt(options.fnout, results_arr, fmt=fmt, header=header)
 
 
 # fn_truth_arr = np.genfromtxt(fn_truth)
