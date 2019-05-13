@@ -110,7 +110,7 @@ if __name__=='__main__':
     paramsfile = options.outdir + '/params.txt'
 
     ES = simulate_frb.EventSimulator()
-    ES.draw_event_parameters_array(fluence_min=1.0, dm_min=options.dm_min, dm_max=options.dm_max, 
+    ES.draw_event_parameters_array(fluence_min=0.75, dm_min=options.dm_min, dm_max=options.dm_max, 
                                  nfrb=options.nfrb, spec_ind_min=spec_ind_min, spec_ind_max=spec_ind_max, width_mean=width_mean, 
                                  width_sig=1, fnout=paramsfile)
   else:
@@ -120,10 +120,10 @@ if __name__=='__main__':
   os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
             --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
-            --dm_low %f --dm_high %f --paramslist %s' \
+            --dm_low %f --dm_high %f --paramslist %s --calc_snr_true_filter' \
             % (fnfil, options.outdir, options.nfrb, \
               options.upsamp_factor, options.upchan_factor, \
-               options.simulator, options.dm_min, options.dm_max, paramsfile))
+              options.simulator, options.dm_min, options.dm_max, paramsfile))
 
 
 
