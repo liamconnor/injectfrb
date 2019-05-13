@@ -134,7 +134,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     while chunksize <= t_delay_max_pix/f_edge:
         chunksize *= 2
         NTIME *= 2
-        print('Increasing to NTIME:%d, chunksize:%d for dm:%d' % (NTIME, chunksize, dm))
+        #print('Increasing to NTIME:%d, chunksize:%d for dm:%d' % (NTIME, chunksize, dm))
 
     ii=0
     params_full_arr = []
