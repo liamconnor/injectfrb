@@ -16,68 +16,6 @@ import simulate_frb
 #import simpulse 
 import tools 
 
-class CompareInjectors:
-    """ Class to generate pulses with both simpulse 
-    and injectfrb packages. 
-
-    Computes correlation coefficient between two 
-    pulse profiles or spectra.
-    """
-
-
-    def __init__(self, nfreq=1024, fluence=1, width=0.001,
-                 dm=100., dt=0.001, freq=(1550, 1250), spec_ind=0.,
-                 scat_tau_ref=0., freq_ref=np.inf):
-        self.nfreq = nfreq
-        self.fluence = fluence 
-        self.dm = dm
-        self.dt = dt
-        self.width = width 
-        self.freq_hi_MHz, self.freq_lo_MHz = freq
-        self.scat_tau_ref = scat_tau_ref
-        self.spec_ind = spec_ind
-        self.freq_ref = freq_ref
-        self.freq_arr = np.linspace(freq[0], freq[1], nfreq)
-
-    def gen_injfrb_pulse(self, upchan_factor=1, upsamp_factor=1, conv_dmsmear=False):
-        """ Generate pulse dynamic spectrum 
-        with injectfrb.simulate_frb
-        """
-        data_bg = np.zeros([upchan_factor*self.nfreq, upsamp_factor*self.ntime])
-        data_injfrb, p = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*self.nfreq, 
-                                     NTIME=upsamp_factor*self.ntime,
-                                     sim=True, fluence=self.fluence, 
-                                     spec_ind=self.spec_ind, width=self.width, dm=self.dm, 
-                                     background_noise=data_bg,
-                                     delta_t=self.dt/upsamp_factor, plot_burst=False, 
-                                     freq=(self.freq_hi_MHz, self.freq_lo_MHz), 
-                                     FREQ_REF=self.freq_ref, scintillate=False, 
-                                     scat_tau_ref=self.scat_tau_ref, 
-                                     disp_ind=2.0, conv_dmsmear=conv_dmsmear)
-
-        data_injfrb = data_injfrb.reshape(self.nfreq, upchan_factor, self.ntime, upsamp_factor)
-        data_injfrb = data_injfrb.mean(1).mean(-1)
-
-        return data_injfrb
-
-    def gen_simpulse(self):
-        """ Generate pulse dynamic spectrum 
-        with simpulse 
-        """
-        undispersed_arrival_time = 0.5*self.ntime*self.dt 
-#        undispersed_arrival_time -= 4148*self.dm*(self.freq_hi_MHz**-2)
-        sm = self.scat_tau_ref
-        sp = simpulse.single_pulse(self.ntime, self.nfreq, self.freq_lo_MHz, self.freq_hi_MHz,
-                           self.dm, sm, self.width, self.fluence,
-                           self.spec_ind, undispersed_arrival_time)
-
-        data_simpulse = np.zeros([self.nfreq, self.ntime])
-        sp.add_to_timestream(data_simpulse, 0.0, self.ntime*self.dt)
-        data_simpulse = data_simpulse[::-1]
-
-        return data_simpulse
-
-
 class DetectionDecision():
     """ Class to decide if an FRB has been 
     detected or not. Each method 
@@ -236,7 +174,7 @@ class DetectionDecision():
 
 
     def dm_time_contour_decision(self, dm_guess, t0_guess, thresh=0.1, 
-                                 simulator='simpulse', dmtarr_function='box'):
+                                 simulator='simpulse', dmtarr_function='box', t_err=0.1, dm_err=0.1):
 
         if type(dmtarr_function) is str:
             if dmtarr_function=='bowtie':
@@ -246,9 +184,9 @@ class DetectionDecision():
                 dmtarr, dms, times, dmtarr_function = self.gen_dm_time_gaussian()
                 extent = [times[0], times[-1], dms[-1], dms[0]]
             elif dmtarr_function=='box':
-                decision = self.dm_time_box_decision(dm_guess, t0_guess, dm_err=0.1, t_err=0.1)
+                decision = self.dm_time_box_decision(dm_guess, t0_guess, dm_err=dm_err, t_err=t_err)
                 extent = [t0_guess-t_err, t0_guess+t_err, dm_guess*(1+dm_err), dm_guess*(1-dm_err)]
-                return decision, 
+                return decision, [], []
 
         val = dmtarr_function(t0_guess, dm_guess)
         decision = val > thresh
@@ -271,7 +209,7 @@ class DetectionDecision():
         t_err : 
             allowed arrival time error in seconds 
         """
-        t_err += self._width_i / 0.001
+        t_err = t_err * (1 + self._width_i / 0.01)
 
         dm_stat = np.abs(1.-np.float(dm_guess)/self._dm)
         t_stat = np.abs(self._t0 - t0_guess)
@@ -280,7 +218,12 @@ class DetectionDecision():
 
         return decision
 
-def get_decision_array(fn_truth, fn_cand, dmtarr_function='box', freq_ref_truth=1400., freq_ref_cand=1400., mk_plot=False):
+def get_decision_array(fn_truth, fn_cand, dmtarr_function='box', 
+                       freq_ref_truth=1400., freq_ref_cand=1400., mk_plot=False):
+    """ Step through each candidate in truth file and find set of triggers 
+    in fn_cand within a box around true candidate. The highest S/N in that 
+    box is the codes guess 
+    """
     dm_truth, sig_truth, t_truth, w_truth = tools.read_singlepulse(fn_truth)
     dm_cand, sig_cand, t_cand, w_cand = tools.read_singlepulse(fn_cand)
 
@@ -396,57 +339,6 @@ if __name__=='__main__':
     # Add the new result columns to truth txt file
     results_arr = np.concatenate([fn_truth_arr, dec_arr_full], axis=1)
     np.savetxt(options.fnout, results_arr, fmt=fmt, header=header)
-
-
-# fn_truth_arr = np.genfromtxt(fn_truth)
-# ntrig = len(fn_truth_arr)
-
-
-# dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function=options.dmtarr_function, 
-#                             freq_ref_truth=options.freq_ref_truth, freq_ref_cand=1549.78, mk_plot=False)
-# print(dec_arr)
-
-# try:
-#     fn_cand = sys.argv[3]
-#     dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-#     dec_arr_full.append(dec_arr)
-#     print(dec_arr)
-#     fmt += '%d    '
-# except:
-#     pass
-
-# try:
-#     fn_cand = sys.argv[4]
-#     dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-#     print(dec_arr)
-#     dec_arr_full.append(dec_arr)
-#     fmt += '%d    '
-# except:
-#     pass
-
-# try:
-#     fn_cand = sys.argv[5]
-#     dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-#     dec_arr_full.append(dec_arr)
-#     fmt += '%d   '
-# except:
-#     pass
-
-# try:
-#     fn_cand = sys.argv[6]
-#     dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-#     dec_arr_full.append(dec_arr)
-#     fmt += '%d    '
-# except:
-#     pass
-
-# B = np.concatenate(dec_arr_full).reshape(-1, ntrig).transpose()
-# print(B[:,0])
-# print(B[:,1])
-# print(B[:,2])
-# Z = np.concatenate([fn_truth_arr, B], axis=1)
-# np.savetxt('here.txt', Z, fmt=fmt)
-
 
 
 
