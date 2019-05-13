@@ -262,14 +262,16 @@ def get_decision_array(fn_truth, fn_cand, dmtarr_function='box',
         decision_arr.append(decision)
         
         if mk_plot:
-            times = np.linspace(t_truth[ii]-1.0/2, t_truth[ii]+1.0/2, 10)
+            times = np.linspace(t_truth[ii]-1.0, t_truth[ii]+1.0, 10)
             plt.fill_between(times, np.ones([10])*dm_truth[ii]*(1-0.2), np.ones([10])*dm_truth[ii]*1.2, alpha=0.25, color='C1')
             plt.scatter(t_truth[ii], dm_truth[ii], s=10, marker='*', color='red')
             plt.scatter(t_cand, dm_cand, sig_cand, color='k', alpha=0.25)
+            plt.scatter(t_guess, dm_guess, sig_guess, color='green', alpha=1.0)
             plt.contour(dmtarr, 0.1, color='C0', extent=extent)
             plt.xlim(t_truth[ii]-5, t_truth[ii]+5)
             plt.ylim(dm_truth[ii]*0.5, dm_truth[ii]*1.5)
-            plt.title('Guess: dm=%0.2f  t=%0.2f' % (dm_guess, t_guess))
+            plt.grid('on')
+            plt.title('Guess: DM=%0.2f  t=%0.2fs' % (dm_guess, t_guess))
             plt.savefig('DM:%0.2f_t0:%0.2f.pdf' % (dm_truth[ii], t_truth[ii]))
 #            plt.show()
     
@@ -287,6 +289,7 @@ def get_decision_array(fn_truth, fn_cand, dmtarr_function='box',
     return decision_arr
 
 if __name__=='__main__':
+
     def foo_callback(option, opt, value, parser):
         setattr(parser.values, option.dest, value.split(','))
 
@@ -307,13 +310,6 @@ if __name__=='__main__':
 
     parser.add_option('--mk_plot', action='store_true',
                         help="Plot each candidate guess", default=False)
-
-    parser.add_option('--dm_high', dest='dm_high', default=None,\
-                        help="max dms to use, either float or tuple", 
-                      type='float')
-
-    parser.add_option('--calc_snr_true_filter', action='store_true',
-                        help="calculate S/N of injected pulse with inj signal as filter", default=False)
 
     parser.add_option('--dmtarr_function', dest='dmtarr_function', 
                         help="Function to determine DM/time boundary (box, gaussian, bowtie)", default='gaussian')
@@ -337,10 +333,11 @@ if __name__=='__main__':
         print("File/freq mismatch: Assuming all candidate reference frequencies are 1400 MHz")
         freq_ref_cand = 1400.*np.ones([len(options.fn_cand_files)])
     else:
-        freq_ref_cand = (options.freq_ref_cand_files[ii]).astype(float)
+        freq_ref_cand = np.array(options.freq_ref_cand_files).astype(float)
 
 
     for ii, fn_cand in enumerate(options.fn_cand_files):
+        print("Processing %s" % fn_cand)
         dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function=options.dmtarr_function, 
                                     freq_ref_truth=options.freq_ref_truth, 
                                     freq_ref_cand=freq_ref_cand[ii], mk_plot=options.mk_plot)
