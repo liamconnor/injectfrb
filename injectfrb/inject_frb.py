@@ -146,7 +146,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     fn_params_out = fn_fil_out.strip('.fil') + '.txt'
 
     f_params_out = open(fn_params_out, 'w+')
-    f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact    Width    Spec_ind    Scat_tau_ref\n')
+    f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact    Width_int    With_obs    Spec_ind    Scat_tau_ref\n')
     f_params_out.close()
 
     if gaussian==True:
@@ -349,8 +349,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         samplecounter += data.shape[1]
         f_params_out = open(fn_params_out, 'a+')
-        f_params_out.write('%2f   %2f   %5f   %7d   %d   %5f   %2f   %5f\n ' % 
-                           (params[0], snr_max, t0, t0_ind, downsamp, width, spec_ind, scat_tau_ref))
+        f_params_out.write('%0.3f    %0.2f    %0.5f    %7d    %d    %5f    %5f    %2f    %5f\n ' % 
+                           (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref))
 
         f_params_out.close()
         del data, data_event
