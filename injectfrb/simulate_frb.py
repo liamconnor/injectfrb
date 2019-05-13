@@ -251,7 +251,6 @@ class Event(object):
         data_full = np.zeros([ndm, ntime])
 
         for ii, dm in enumerate(dm):
-            print(dm)
             for jj, f in enumerate(freq):
                 self._dm = dm
                 tpix = int(self.arrival_time(f) / delta_t)
@@ -365,17 +364,19 @@ class EventSimulator():
                                     spec_ind_min=0., spec_ind_max=0., width_mean=.001, 
                                     width_sig=1, fnout=None):
         dm = np.random.uniform(dm_min, dm_max, nfrb)
-        fluence = fluence_min*np.random.uniform(0, 1, nfrb)**(-2/3.)
+        fluence = fluence_min*np.random.uniform(0, 1, nfrb)**(-2/3.) #hack
+#        fluence = fluence_min*np.ones([nfrb]) # hack
         spec_ind = np.random.uniform(spec_ind_min, spec_ind_max, nfrb)
         disp_ind = 2.*np.ones([nfrb])
+        # width distribution in seconds
         width = np.random.lognormal(np.log(width_mean), width_sig, nfrb)
 
         if fnout!=None:
-            params_arr = np.concatenate([dm, fluence, 1e3*width, spec_ind, disp_ind])
+            params_arr = np.concatenate([dm, fluence, width, spec_ind, disp_ind])
             params_arr.shape = (5, nfrb)
             params_arr = params_arr.transpose()
             np.savetxt(fnout, params_arr, fmt='%.4f')
-
+        
         return dm, fluence, width, spec_ind, disp_ind
 
 def uniform_range(min_, max_, n=1):

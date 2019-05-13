@@ -221,7 +221,7 @@ class Spectra(object):
                 self.data[ii] = np.ones_like(self.data[ii])*(maskvals[:,np.newaxis][ii])
         return self
 
-    def dedisperse(self, dm=0, padval=0, ref_freq=np.inf):
+    def dedisperse(self, dm=0, padval=0, ref_freq=None):
         """Shift channels according to the delays predicted by
             the given DM.
             
@@ -236,6 +236,8 @@ class Spectra(object):
 
             *** Dedispersion happens in place ***
         """
+        if ref_freq is None:
+            ref_freq = 0.5*(self.freqs[0]+self.freqs[-1])
         assert dm >= 0
         ref_delay = psr_utils.delay_from_DM(dm-self.dm, ref_freq)
         delays = psr_utils.delay_from_DM(dm-self.dm, self.freqs)
