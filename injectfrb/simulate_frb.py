@@ -226,7 +226,6 @@ class Event(object):
             #print(f, val.max(), self._fluence)
 
             if scintillate is True:
-                print('scintillating')
                 val = (0.1 + scint_amp[ii]) * val 
 
             data[ii] += val
@@ -365,7 +364,7 @@ class EventSimulator():
                                     width_sig=1, fnout=None):
         dm = np.random.uniform(dm_min, dm_max, nfrb)
         fluence = fluence_min*np.random.uniform(0, 1, nfrb)**(-2/3.) #hack
-#        fluence = fluence_min*np.ones([nfrb]) # hack
+        fluence = fluence_min*np.ones([nfrb]) # hack
         spec_ind = np.random.uniform(spec_ind_min, spec_ind_max, nfrb)
         disp_ind = 2.*np.ones([nfrb])
         # width distribution in seconds
@@ -375,7 +374,7 @@ class EventSimulator():
             params_arr = np.concatenate([dm, fluence, width, spec_ind, disp_ind])
             params_arr.shape = (5, nfrb)
             params_arr = params_arr.transpose()
-            np.savetxt(fnout, params_arr, fmt='%.4f')
+            np.savetxt(fnout, params_arr, fmt='%.2f %.3f %.5f %.2f %.4f', header='DM  fluence  width  spec_ind  disp_ind')
         
         return dm, fluence, width, spec_ind, disp_ind
 

@@ -52,7 +52,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
-                         dm=1000.0, dt=0.00008192,
+                         dm=1000.0, dt=8.192e-5,
                          chunksize=2, calc_snr_true_filter=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
@@ -113,6 +113,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             params_arr = params_arr[:, None]
     else:
         params_arr = None
+        dm_max = 1000.
+        dm_min = 10.
 
     SNRTools = tools.SNR_Tools()
 

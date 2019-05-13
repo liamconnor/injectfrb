@@ -260,12 +260,11 @@ def test_plot_comparison():
 
 
 if __name__=='__main__':
-#    test_gen_injfrb()
-#    test_gen_simpulse()
-#    test_corr_coeff()
-#    test_plot_comparison()
-#    test_imitate_simpulse()
-    gen_corrcoef_grid_dm_width(ndm=10, nwidth=10)
+    test_gen_injfrb()
+    test_gen_simpulse()
+    test_plot_comparison()
+    test_imitate_simpulse()
+    gen_corrcoef_grid_dm_width(ndm=2, nwidth=2)
     print("Note gen_corrcoef_grid_spec_scat still fails")
 
 
