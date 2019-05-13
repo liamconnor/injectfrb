@@ -5,6 +5,7 @@ FRB-benchmarking tools
 Code to check if a given FRB guess matches the true 
 DM and arrival times. 
 """
+import sys
 
 import numpy as np
 import matplotlib.pylab as plt
@@ -144,7 +145,7 @@ class DetectionDecision():
         return data_injfrb
 
     def gen_dm_time_gaussian(self):
-        sigdm = 0.1*self._dm
+        sigdm = 5. + 0.025*self._dm
         sigt = 0.1*(1 + self._width_i/0.001) # scale for pulse width, min 0.1 sec 
         ntime = 1000
         ndm = 1000
@@ -214,8 +215,8 @@ class DetectionDecision():
 
         plt.xlabel('Time [s]', fontsize=15)
         plt.ylabel('DM [pc cm**-3]', fontsize=15)
-        plt.show()
-
+#        plt.show()
+        return plt
 
     def find_parameter_guess(self, dm_arr, t_arr, snr_arr, 
                              dm_err=0.5, t_err=1.):
@@ -239,16 +240,19 @@ class DetectionDecision():
         if type(dmtarr_function) is str:
             if dmtarr_function=='bowtie':
                 dmtarr, dms, times, dmtarr_function = self.gen_dm_time_bowtie(simulator=simulator)
+                extent = [times[0], times[-1], dms[-1], dms[0]]
             elif dmtarr_function=='gaussian':
                 dmtarr, dms, times, dmtarr_function = self.gen_dm_time_gaussian()
+                extent = [times[0], times[-1], dms[-1], dms[0]]
             elif dmtarr_function=='box':
-                decision = self.dm_time_box_decision(dm_guess, t0_guess)
-                return decision
+                decision = self.dm_time_box_decision(dm_guess, t0_guess, dm_err=0.1, t_err=0.1)
+                extent = [t0_guess-t_err, t0_guess+t_err, dm_guess*(1+dm_err), dm_guess*(1-dm_err)]
+                return decision, 
 
         val = dmtarr_function(t0_guess, dm_guess)
         decision = val > thresh
 
-        return decision[0]
+        return decision[0], dmtarr, extent
 
     def dm_time_box_decision(self, dm_guess, t0_guess, 
                     dm_err=0.1, t_err=0.1):
@@ -275,25 +279,40 @@ class DetectionDecision():
 
         return decision
 
-def get_decision_array(fn_truth, fn_cand, dmtarr_function='box'):
+def get_decision_array(fn_truth, fn_cand, dmtarr_function='box', freq_ref_truth=1400., freq_ref_cand=1400., mk_plot=False):
     dm_truth, sig_truth, t_truth, w_truth = tools.read_singlepulse(fn_truth)
     dm_cand, sig_cand, t_cand, w_cand = tools.read_singlepulse(fn_cand)
+
+    t_truth += 4148*dm_truth*(freq_ref_cand**-2 - freq_ref_truth**-2)
 
     decision_arr = []
 
     for ii in range(len(dm_truth)):
         D = DetectionDecision(dm_truth[ii], t_truth[ii])
         dm_guess, t_guess, sig_guess = D.find_parameter_guess(dm_cand, 
-                                        t_cand, sig_cand, dm_err=0.5, t_err=1.)
+                                                              t_cand, sig_cand, dm_err=0.20, t_err=1.0)
 
         if dm_guess==[]:
             decision_arr.append(0)
             continue
 
-        decision = 1+int(D.dm_time_contour_decision(dm_guess, t_guess, 
-                                                  simulator='injectfrb', 
-                                                  dmtarr_function=dmtarr_function))
+        dec_bool, dmtarr, extent = D.dm_time_contour_decision(dm_guess, t_guess,
+                                                  simulator='injectfrb',
+                                                  dmtarr_function=dmtarr_function)
+        decision = 1+int(dec_bool)
         decision_arr.append(decision)
+        
+        if mk_plot:
+            times = np.linspace(t_truth[ii]-1.0/2, t_truth[ii]+1.0/2, 10)
+            plt.fill_between(times, np.ones([10])*dm_truth[ii]*(1-0.2), np.ones([10])*dm_truth[ii]*1.2, alpha=0.25, color='C1')
+            plt.scatter(t_truth[ii], dm_truth[ii], s=10, marker='*', color='red')
+            plt.scatter(t_cand, dm_cand, sig_cand, color='k', alpha=0.25)
+            plt.contour(dmtarr, 0.1, color='C0', extent=extent)
+            plt.xlim(t_truth[ii]-5, t_truth[ii]+5)
+            plt.ylim(dm_truth[ii]*0.5, dm_truth[ii]*1.5)
+            plt.title('Guess: dm=%0.2f  t=%0.2f' % (dm_guess, t_guess))
+            plt.savefig('DM:%0.2f_t0:%0.2f.pdf' % (dm_truth[ii], t_truth[ii]))
+#            plt.show()
     
     decision_arr  = np.array(decision_arr)
 
@@ -308,14 +327,60 @@ def get_decision_array(fn_truth, fn_cand, dmtarr_function='box'):
 
     return decision_arr
 
+fn_truth = sys.argv[1]
+fn_cand = sys.argv[2]
 
+fn_truth_arr = np.genfromtxt(fn_truth)
+ntrig = len(fn_truth_arr)
 
+dec_arr_full = []
 
+dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+dec_arr_full.append(dec_arr)
 
+fmt = '%0.3f    %0.2f    %0.5f    %7d    %d    %5f    %5f    %2f    %5f    %d   ' 
+print(dec_arr)
 
+try:
+    fn_cand = sys.argv[3]
+    dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+    dec_arr_full.append(dec_arr)
+    print(dec_arr)
+    fmt += '%d    '
+except:
+    pass
 
+try:
+    fn_cand = sys.argv[4]
+    dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+    print(dec_arr)
+    dec_arr_full.append(dec_arr)
+    fmt += '%d    '
+except:
+    pass
 
+try:
+    fn_cand = sys.argv[5]
+    dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+    dec_arr_full.append(dec_arr)
+    fmt += '%d   '
+except:
+    pass
 
+try:
+    fn_cand = sys.argv[6]
+    dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+    dec_arr_full.append(dec_arr)
+    fmt += '%d    '
+except:
+    pass
+
+B = np.concatenate(dec_arr_full).reshape(-1, ntrig).transpose()
+print(B[:,0])
+print(B[:,1])
+print(B[:,2])
+Z = np.concatenate([fn_truth_arr, B], axis=1)
+np.savetxt('here.txt', Z, fmt=fmt)
 
 
 
