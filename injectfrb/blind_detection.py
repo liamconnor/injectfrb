@@ -10,6 +10,7 @@ import sys
 import numpy as np
 import matplotlib.pylab as plt
 from scipy import interpolate 
+import optparse
 
 import simulate_frb
 #import simpulse 
@@ -327,60 +328,128 @@ def get_decision_array(fn_truth, fn_cand, dmtarr_function='box', freq_ref_truth=
 
     return decision_arr
 
-fn_truth = sys.argv[1]
-fn_cand = sys.argv[2]
+if __name__=='__main__':
+    def foo_callback(option, opt, value, parser):
+        setattr(parser.values, option.dest, value.split(','))
 
-fn_truth_arr = np.genfromtxt(fn_truth)
-ntrig = len(fn_truth_arr)
+    parser = optparse.OptionParser(prog="inject_frb.py", \
+                        version="", \
+                        usage="%prog FN_FILTERBANK OUTDIR [OPTIONS]", \
+                        description="Inject FRBs into filterbank data")
 
-dec_arr_full = []
+    parser.add_option('--fn_cand_files', type='string', action='callback', callback=foo_callback)
 
-dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-dec_arr_full.append(dec_arr)
+    parser.add_option('--freq_ref_cand_files', dest='freq_ref_cand_files', type='str', \
+                        help='Comma-separated list of reference frequencies for candidate files [MHz]', \
+                        default='1400', callback=foo_callback, action='callback')
 
-fmt = '%0.3f    %0.2f    %0.5f    %7d    %d    %5f    %5f    %2f    %5f    %d   ' 
-print(dec_arr)
+    parser.add_option('--freq_ref_truth', dest='freq_ref_truth', type='float', \
+                        help='reference frequency of arrival times in truth file [MHz]', \
+                        default=1400.)
 
-try:
-    fn_cand = sys.argv[3]
-    dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-    dec_arr_full.append(dec_arr)
-    print(dec_arr)
-    fmt += '%d    '
-except:
-    pass
+    parser.add_option('--mk_plot', action='store_true',
+                        help="Plot each candidate guess", default=False)
 
-try:
-    fn_cand = sys.argv[4]
-    dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-    print(dec_arr)
-    dec_arr_full.append(dec_arr)
-    fmt += '%d    '
-except:
-    pass
 
-try:
-    fn_cand = sys.argv[5]
-    dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-    dec_arr_full.append(dec_arr)
-    fmt += '%d   '
-except:
-    pass
+    parser.add_option('--dm_high', dest='dm_high', default=None,\
+                        help="max dms to use, either float or tuple", 
+                      type='float')
 
-try:
-    fn_cand = sys.argv[6]
-    dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
-    dec_arr_full.append(dec_arr)
-    fmt += '%d    '
-except:
-    pass
+    parser.add_option('--calc_snr_true_filter', action='store_true',
+                        help="calculate S/N of injected pulse with inj signal as filter", default=False)
 
-B = np.concatenate(dec_arr_full).reshape(-1, ntrig).transpose()
-print(B[:,0])
-print(B[:,1])
-print(B[:,2])
-Z = np.concatenate([fn_truth_arr, B], axis=1)
-np.savetxt('here.txt', Z, fmt=fmt)
+    parser.add_option('--dmtarr_function', dest='dmtarr_function', 
+                        help="Function to determine DM/time boundary (box, gaussian, bowtie)", default='gaussian')
+
+    parser.add_option('--upsamp_factor', dest='upsamp_factor', type='int', \
+                        help="Upsample data by this factor before injecting. Downsample after.", \
+                        default=2)
+
+    parser.add_option('--paramslist', dest='paramslist', type='str', \
+                        help="path to txt file containing FRB parameters", \
+                        default=None)
+
+    options, args = parser.parse_args()
+    fn_truth = args[0]
+
+    fn_truth_arr = np.genfromtxt(fn_truth)
+    ntrig = len(fn_truth_arr)
+
+    header = 'DM     Sigma     Time (s)   Sample  Downfact  Width_intrins  With_obs  Spec_ind  Scat_tau_ref '
+    fmt = '%0.3f    %0.2f    %0.5f    %7d    %d    %5f    %5f    %2f    %5f    '
+
+    dec_arr_full = []    
+
+    if len(options.fn_cand_files)!=len(options.freq_ref_cand_files):
+        print("File/freq mismatch: Assuming all candidate reference frequencies are 1400 MHz")
+        freq_ref_cand = 1400.*np.ones([len(options.fn_cand_files)])
+    else:
+        freq_ref_cand = (options.freq_ref_cand_files[ii]).astype(float)
+
+
+    for ii, fn_cand in enumerate(options.fn_cand_files):
+        dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function=options.dmtarr_function, 
+                                    freq_ref_truth=options.freq_ref_truth, 
+                                    freq_ref_cand=freq_ref_cand[ii], mk_plot=options.mk_plot)
+
+        dec_arr_full.append(dec_arr)
+
+        header += 'code%d ' % ii
+        fmt += '%d    '
+
+    B = np.concatenate(dec_arr_full).reshape(-1, ntrig).transpose()
+    Z = np.concatenate([fn_truth_arr, B], axis=1)
+    np.savetxt('here.txt', Z, fmt=fmt, header=header)
+
+
+# fn_truth_arr = np.genfromtxt(fn_truth)
+# ntrig = len(fn_truth_arr)
+
+
+# dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function=options.dmtarr_function, 
+#                             freq_ref_truth=options.freq_ref_truth, freq_ref_cand=1549.78, mk_plot=False)
+# print(dec_arr)
+
+# try:
+#     fn_cand = sys.argv[3]
+#     dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+#     dec_arr_full.append(dec_arr)
+#     print(dec_arr)
+#     fmt += '%d    '
+# except:
+#     pass
+
+# try:
+#     fn_cand = sys.argv[4]
+#     dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+#     print(dec_arr)
+#     dec_arr_full.append(dec_arr)
+#     fmt += '%d    '
+# except:
+#     pass
+
+# try:
+#     fn_cand = sys.argv[5]
+#     dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+#     dec_arr_full.append(dec_arr)
+#     fmt += '%d   '
+# except:
+#     pass
+
+# try:
+#     fn_cand = sys.argv[6]
+#     dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function='gaussian', freq_ref_truth=1400., freq_ref_cand=1549.78, mk_plot=False)
+#     dec_arr_full.append(dec_arr)
+#     fmt += '%d    '
+# except:
+#     pass
+
+# B = np.concatenate(dec_arr_full).reshape(-1, ntrig).transpose()
+# print(B[:,0])
+# print(B[:,1])
+# print(B[:,2])
+# Z = np.concatenate([fn_truth_arr, B], axis=1)
+# np.savetxt('here.txt', Z, fmt=fmt)
 
 
 
