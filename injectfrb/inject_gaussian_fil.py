@@ -68,6 +68,10 @@ if __name__=='__main__':
                       help="min dm to use, either float or tuple", 
                     type='float')
 
+  parser.add_option('--dm_max', dest='dm_max', default=2000.,\
+                      help="min dm to use, either float or tuple", 
+                    type='float')
+
   parser.add_option('--fluence_min', dest='fluence_min', default=1.,\
                     help="fluence_min=1 is calibrated to S/N_min=10", 
                     type='float')
