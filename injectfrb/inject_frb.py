@@ -54,10 +54,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=1000.0, dt=8.192e-5,
                          chunksize=2, calc_snr_true_filter=True, start=0, 
-                         freq_ref=1400., subtract_zero=False, clipping=None, 
+                         freq_ref=None, subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
-                         simulator='injectfrb', paramslist=None, noise_std=5.,
+                         simulator='injectfrb', paramslist=None, noise_std=18.,
                          nbit=8):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
@@ -120,6 +120,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     data_fil_obj_skel, freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)
 
+    if freq_ref is None:
+        freq_ref = 0.5*(freq_arr[0]+freq_arr[-1])
+
     if type(dm) is not tuple:
         max_dm = dm
     else:
@@ -148,7 +151,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     fn_params_out = fn_fil_out.strip('.fil') + '.txt'
 
     f_params_out = open(fn_params_out, 'w+')
-    f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact    Width_int    With_obs    Spec_ind    Scat_tau_ref\n')
+    f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact    Width_int    With_obs    Spec_ind    Scat_tau_ref   Freq_ref\n')
     f_params_out.close()
 
     if gaussian==True:
@@ -181,8 +184,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if gaussian_noise is True:
             t_delay_max = abs(4.148e3*dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
             t_delay_max_pix = np.int(3*t_delay_max/dt)
-            t_chunksize_min = 1.0
-            chunksize = 2**np.ceil(np.log2(t_delay_max_pix))
+            t_chunksize_min = 2.0
+            chunksize = 2**(np.ceil(np.log2(t_delay_max_pix)))
             chunksize = np.int(max(t_chunksize_min/dt, chunksize))
 
             NTIME = chunksize
@@ -212,10 +215,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if gaussian_noise is True:
             if simulator=='injectfrb':
                 data_event = np.zeros([upchan_factor*NFREQ, upsamp_factor*NTIME])
-                noise_event = np.random.normal(100, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
+                noise_event = np.random.normal(128, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
             elif simulator=='simpulse':
                 data_event = np.zeros([NFREQ, NTIME])
-                noise_event = np.random.normal(100, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
+                noise_event = np.random.normal(128, noise_std, NFREQ*NTIME).reshape(NFREQ, NTIME)
             else:
                 print("Do not recognize simulator, neither (injectfrb, simpulse)")
                 exit()
@@ -351,8 +354,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         samplecounter += data.shape[1]
         f_params_out = open(fn_params_out, 'a+')
-        f_params_out.write('%0.3f    %0.2f    %0.5f    %7d    %d    %5f    %5f    %2f    %5f\n ' % 
-                           (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref))
+        f_params_out.write('%5.3f    %4.2f    %4.5f    %8d    %5d    %0.5f    %5f    %2f    %5f    %4.2f\n ' % 
+                           (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref, freq_ref))
 
         f_params_out.close()
         del data, data_event
