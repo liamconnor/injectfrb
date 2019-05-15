@@ -68,8 +68,8 @@ if __name__=='__main__':
                       help="min dm to use, either float or tuple", 
                     type='float')
 
-  parser.add_option('--dm_max', dest='dm_max', default=2000.,\
-                    help="max dms to use, either float or tuple", 
+  parser.add_option('--fluence_min', dest='fluence_min', default=1.,\
+                    help="fluence_min=1 is calibrated to S/N_min=10", 
                     type='float')
 
   parser.add_option('--paramsfile', dest='paramsfile', default=None,\
@@ -106,21 +106,21 @@ if __name__=='__main__':
   if not os.path.isdir(options.outdir):
       os.mkdir(options.outdir)
 
+  timestr = time.strftime("%Y%m%d-%H%M")
   if options.paramsfile is None:
-    paramsfile = options.outdir + '/params.txt'
+    paramsfile = options.outdir + '/params%s.txt' % timestr
 
     ES = simulate_frb.EventSimulator()
-    ES.draw_event_parameters_array(fluence_min=0.75, dm_min=options.dm_min, dm_max=options.dm_max, 
+    ES.draw_event_parameters_array(fluence_min=options.fluence_min, dm_min=options.dm_min, dm_max=options.dm_max, 
                                  nfrb=options.nfrb, spec_ind_min=spec_ind_min, spec_ind_max=spec_ind_max, width_mean=width_mean, 
                                  width_sig=1, fnout=paramsfile)
   else:
     paramsfile = options.paramsfile
 
-  timestr = time.strftime("%Y%m%d-%H%M")
   os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
             --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
-            --dm_low %f --dm_high %f --paramslist %s --calc_snr_true_filter' \
+            --dm_low %f --dm_high %f --paramslist %s' \
             % (fnfil, options.outdir, options.nfrb, \
               options.upsamp_factor, options.upchan_factor, \
               options.simulator, options.dm_min, options.dm_max, paramsfile))
