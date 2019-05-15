@@ -262,18 +262,21 @@ def get_decision_array(fn_truth, fn_cand, dmtarr_function='box',
         decision_arr.append(decision)
         
         if mk_plot:
+            fig = plt.figure()
+            ind = np.where( (np.abs(1-dm_cand/dm_truth[ii])<0.5) & (np.abs(t_cand-t_truth[ii])<5) )[0]
             times = np.linspace(t_truth[ii]-1.0, t_truth[ii]+1.0, 10)
-            plt.fill_between(times, np.ones([10])*dm_truth[ii]*(1-0.2), np.ones([10])*dm_truth[ii]*1.2, alpha=0.25, color='C1')
+            plt.fill_between(times, np.ones([10])*dm_truth[ii]*(1-0.2), np.ones([10])*dm_truth[ii]*1.2, alpha=0.15, color='C1')
             plt.scatter(t_truth[ii], dm_truth[ii], s=10, marker='*', color='red')
-            plt.scatter(t_cand, dm_cand, sig_cand, color='k', alpha=0.25)
-            plt.scatter(t_guess, dm_guess, sig_guess, color='green', alpha=1.0)
+            plt.scatter(t_cand[ind], dm_cand[ind], sig_cand[ind], color='k', alpha=0.25)
+            plt.scatter(t_guess, dm_guess, 20, color='C6', alpha=0.85, marker='s', edgecolor='k')
             plt.contour(dmtarr, 0.1, color='C0', extent=extent)
             plt.xlim(t_truth[ii]-5, t_truth[ii]+5)
             plt.ylim(dm_truth[ii]*0.5, dm_truth[ii]*1.5)
-            plt.grid('on')
-            plt.title('Guess: DM=%0.2f  t=%0.2fs' % (dm_guess, t_guess))
+            plt.grid('on', alpha=0.5)
+            plt.xlabel('Time [s]', fontsize=15)
+            plt.ylabel('DM', fontsize=15)
+            plt.title('Truth: DM=%0.2f  t=%0.2fs  S/N:%0.2f' % (dm_truth[ii], t_truth[ii], sig_truth[ii]))
             plt.savefig('DM:%0.2f_t0:%0.2f.pdf' % (dm_truth[ii], t_truth[ii]))
-#            plt.show()
     
     decision_arr  = np.array(decision_arr)
 
@@ -325,7 +328,7 @@ if __name__=='__main__':
     ntrig = len(fn_truth_arr)
 
     header = 'DM     Sigma     Time (s)   Sample  Downfact  Width_intrins  With_obs  Spec_ind  Scat_tau_ref '
-    fmt = '%0.3f    %0.2f    %0.5f    %7d    %d    %5f    %5f    %2f    %5f    '
+    fmt = '%5.3f    %3.2f    %5.5f    %9d    %d    %5f    %5f    %2f    %1.5f    '
 
     dec_arr_full = []    
 
@@ -337,7 +340,7 @@ if __name__=='__main__':
 
 
     for ii, fn_cand in enumerate(options.fn_cand_files):
-        print("Processing %s" % fn_cand)
+        print("\nProcessing %s" % fn_cand)
         dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function=options.dmtarr_function, 
                                     freq_ref_truth=options.freq_ref_truth, 
                                     freq_ref_cand=freq_ref_cand[ii], mk_plot=options.mk_plot)
@@ -345,7 +348,7 @@ if __name__=='__main__':
         dec_arr_full.append(dec_arr)
 
         header += 'code%d ' % ii
-        fmt += '%d    '
+        fmt += '%5d    '
 
     dec_arr_full = np.concatenate(dec_arr_full).reshape(-1, ntrig).transpose()
     # Add the new result columns to truth txt file
