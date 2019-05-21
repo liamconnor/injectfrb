@@ -5,9 +5,9 @@ import numpy as np
 
 fnfil = sys.argv[1]
 
-if sys.argv[2] not None:
+try: 
 	fntruth = sys.argv[2]
-else:
+except:
 	fntruth = fnfil.strip('.fil') + '.txt'
 
 dm_min = 10.
