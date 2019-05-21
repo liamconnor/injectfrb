@@ -9,7 +9,7 @@ dm_max = 3000.
 outdir = './'
 fnout = 'output'
 
-heim_args = (fnfil, dm_min, dm_max, outdir)
+heim_args = (fnfil, dm_min, dm_max)
 heimdall_str = 'heimdall -v -f %s -dm %f %f -rfi_no_narrow -rfi_no_broad -output_dir /tmp/' % heim_args
 heimdall_post_str = 'cat /tmp/*.cand > %s/%s.cand' % (outdir, outfn)
 
