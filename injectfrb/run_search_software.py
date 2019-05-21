@@ -4,6 +4,12 @@ import sys
 import numpy as np
 
 fnfil = sys.argv[1]
+
+if sys.argv[2]:
+	fntruth = sys.argv[2]
+else:
+	fntruth = fnfil.strip('.fil') + '.txt'
+
 dm_min = 10.
 dm_max = 3000.
 outdir = './'
@@ -24,3 +30,8 @@ print("Starting Amber")
 os.system(amber_str)
 print("Starting Fredda")
 os.system(fredda_str)
+
+blind_detection_args = (fntruth, fnout, fnout, fnout, fnout)
+blind_detection_str = 'python blind_detection.py %s --fn_cand_files %s.cand,%s.trigger,%s.fredda --mk_plot --fnout %s.results'
+
+os.system(blind_detection_str)
