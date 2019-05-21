@@ -9,8 +9,8 @@ import optparse
 
 import simulate_frb
 
-spec_ind_min = -4
-spec_ind_max = 4
+spec_ind_min = 0#-4
+spec_ind_max = 0#4
 width_mean = 0.001
 
 filhdr = {'telescope_id': 10,
@@ -20,7 +20,7 @@ filhdr = {'telescope_id': 10,
       'data_type': 1,
       'nchans': 1536,
       'machine_id': 15,
-      'tsamp': 8.192e-05,
+      'tsamp': 8.192e-5,
       'foff': -0.1953125,
 #      'foff': -0.6510416,
       'src_raj': 181335.2,
@@ -113,7 +113,7 @@ if __name__=='__main__':
   timestr = time.strftime("%Y%m%d-%H%M")
   if options.paramsfile is None:
     paramsfile = options.outdir + '/params%s.txt' % timestr
-
+    
     ES = simulate_frb.EventSimulator()
     ES.draw_event_parameters_array(fluence_min=options.fluence_min, dm_min=options.dm_min, dm_max=options.dm_max, 
                                  nfrb=options.nfrb, spec_ind_min=spec_ind_min, spec_ind_max=spec_ind_max, width_mean=width_mean, 

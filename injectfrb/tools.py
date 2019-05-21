@@ -257,7 +257,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 
         if len(A.shape)==1:
             A = A[None]
-
+        
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
         downsample = 2**log_2_downsample
@@ -266,6 +266,13 @@ def read_singlepulse(fn, max_rows=None, beam=None):
             return dm, sig, tt, downsample, beamno
         except:
             pass
+    elif fn.split('.')[-1]=='fredda':
+        A = np.genfromtxt(fn, max_rows=max_rows)
+
+        if len(A.shape)==1:
+            A = A[None]
+        
+        dm, sig, tt, downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
     else:
         print("Didn't recognize singlepulse file")
         return 
@@ -824,24 +831,19 @@ if __name__=='__main__':
                         version="", \
                         usage="%prog fn1 fn2 [OPTIONS]", \
                         description="Compare to single-pulse trigger files")
-
     parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
                         help="Only process events above >sig_thresh S/N" \
                                 "(Default: 5.0)", default=5.0)
-
     parser.add_option('--save_data', dest='save_data', type='str',
                         help="save each trigger's data. 0=don't save. \
                         hdf5 = save to hdf5. npy=save to npy. concat to \
                         save all triggers into one file",
                         default='hdf5')
-
     parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
                         help="make plot if True (default False)", default=False)
-
     parser.add_option('--dm_min', dest='dm_min', type='float',
                         help="", 
                         default=0.0)
-
     parser.add_option('--dm_max', dest='dm_max', type='float',
                         help="", 
                         default=np.inf)

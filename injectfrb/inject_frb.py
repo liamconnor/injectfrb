@@ -119,6 +119,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     SNRTools = tools.SNR_Tools()
 
     data_fil_obj_skel, freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)
+    NFREQ = header['nchans']
 
     if freq_ref is None:
         freq_ref = 0.5*(freq_arr[0]+freq_arr[-1])
@@ -184,7 +185,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if gaussian_noise is True:
             t_delay_max = abs(4.148e3*dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
             t_delay_max_pix = np.int(3*t_delay_max/dt)
-            t_chunksize_min = 2.0
+            t_chunksize_min = 10.0
             chunksize = 2**(np.ceil(np.log2(t_delay_max_pix)))
             chunksize = np.int(max(t_chunksize_min/dt, chunksize))
 
@@ -379,6 +380,10 @@ if __name__=='__main__':
                         help="Number of FRBs to inject(Default: 50).", \
                         default=10)
 
+    parser.add_option('--nfreq', dest='nfreq', type='int', \
+                        help="Number of FRBs to inject(Default: 50).", \
+                        default=10)
+
     parser.add_option('--rfi_clean', dest='rfi_clean', default=False,\
                         help="apply rfi filters")
 
@@ -434,7 +439,7 @@ if __name__=='__main__':
         dm = (options.dm_low, options.dm_high)
 
     if len(options.dm_list)==1:
-        inject_in_filterbank(fn_fil, fn_fil_out, N_FRB=options.nfrb,
+        inject_in_filterbank(fn_fil, fn_fil_out, N_FRB=options.nfrb, NFREQ=options.nfreq,
                                 NTIME=2**15, rfi_clean=options.rfi_clean,
                                 calc_snr_true_filter=options.calc_snr_true_filter, start=0,
                                 dm=float(options.dm_list[0]), 
