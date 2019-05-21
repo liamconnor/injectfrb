@@ -249,7 +249,7 @@ def get_decision_array(fn_truth, fn_cand, dmtarr_function='box',
     for ii in range(len(dm_truth)):
         D = DetectionDecision(dm_truth[ii], t_truth[ii])
         dm_guess, t_guess, sig_guess = D.find_parameter_guess(dm_cand, 
-                                                              t_cand, sig_cand, dm_err=0.20, t_err=1.0)
+                                                              t_cand, sig_cand, dm_err=0.75, t_err=2.0)
 
         if dm_guess==[]:
             decision_arr.append(0)
@@ -342,7 +342,7 @@ if __name__=='__main__':
     for ii, fn_cand in enumerate(options.fn_cand_files):
         print("\nProcessing %s" % fn_cand)
         dec_arr = get_decision_array(fn_truth, fn_cand, dmtarr_function=options.dmtarr_function, 
-                                    freq_ref_truth=options.freq_ref_truth, 
+                                    freq_ref_truth=options.freq_ref_truth,
                                     freq_ref_cand=freq_ref_cand[ii], mk_plot=options.mk_plot)
 
         dec_arr_full.append(dec_arr)
@@ -354,29 +354,6 @@ if __name__=='__main__':
     # Add the new result columns to truth txt file
     results_arr = np.concatenate([fn_truth_arr, dec_arr_full], axis=1)
     np.savetxt(options.fnout, results_arr, fmt=fmt, header=header)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
