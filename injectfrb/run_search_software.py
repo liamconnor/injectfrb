@@ -5,7 +5,7 @@ import numpy as np
 
 fnfil = sys.argv[1]
 
-if sys.argv[2]:
+if sys.argv[2] not None:
 	fntruth = sys.argv[2]
 else:
 	fntruth = fnfil.strip('.fil') + '.txt'
