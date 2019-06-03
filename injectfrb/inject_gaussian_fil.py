@@ -9,8 +9,8 @@ import optparse
 
 from injectfrb import simulate_frb
 
-spec_ind_min = 0#-4
-spec_ind_max = 0#4
+spec_ind_min = -4
+spec_ind_max = 4
 width_mean = 0.001
 
 filhdr = {'telescope_id': 10,
@@ -41,7 +41,7 @@ if __name__=='__main__':
                       usage="%prog FN_FILTERBANK OUTDIR [OPTIONS]", \
                       description="Inject FRBs into gaussian filterbank data")
 
-  parser.add_option('--fnfil', dest='fnfil', default='./data/test.fil',\
+  parser.add_option('--fnfil', dest='fnfil', default='injectfrb/data/test.fil',\
                       help="input filterbank file", 
                     type=str)
 
@@ -121,7 +121,7 @@ if __name__=='__main__':
   else:
     paramsfile = options.paramsfile
 
-  os.system('python inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
+  os.system('python injectfrb/inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
             --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
             --dm_low %f --dm_high %f --paramslist %s' \
