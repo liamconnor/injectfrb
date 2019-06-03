@@ -7,7 +7,7 @@ import time
 import numpy as np
 import optparse
 
-import simulate_frb
+from injectfrb import simulate_frb
 
 spec_ind_min = 0#-4
 spec_ind_max = 0#4
