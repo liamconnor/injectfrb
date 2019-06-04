@@ -99,7 +99,7 @@ if __name__=='__main__':
       for k,v in filhdr.items():
           newhdr += sigproc.addto_hdr(k, v)
       newhdr += sigproc.addto_hdr("HEADER_END", None)
-      print "Writing new header to '%s'" % fnfil
+      print("Writing new header to '%s'" % fnfil)
       outfile = open(fnfil, 'wb')
       outfile.write(newhdr)
       spectrum = np.zeros([filhdr['nchans']], dtype=np.uint8)
