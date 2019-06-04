@@ -397,11 +397,12 @@ if __name__=='__main__':
                       type='float')
 
     parser.add_option('--dm_high', dest='dm_high', default=None,\
-                        help="max dms to use, either float or tuple", 
+                      help="max dms to use, either float or tuple", 
                       type='float')
 
-    parser.add_option('--calc_snr', 
-                      help="calculate S/N of injected pulse with inj signal as filter", default=False)
+    parser.add_option('--calc_snr', type=bool,
+                      help="calculate S/N of injected pulse with inj signal as filter", 
+                      default=False)
     
     parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
 
