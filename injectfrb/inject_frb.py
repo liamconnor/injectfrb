@@ -53,7 +53,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=1000.0, dt=8.192e-5,
-                         chunksize=2, calc_snr_true_filter=True, start=0, 
+                         chunksize=2, calc_snr=True, start=0, 
                          freq_ref=None, subtract_zero=False, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
@@ -81,7 +81,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         time resolution 
     chunksize : int 
         size of data in samples to read in 
-    calc_snr_true_filter : bool 
+    calc_snr : bool 
         calculates S/N of injected pulse using pulse profile 
         as matched filter
     start : int 
@@ -278,7 +278,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         #data_filobj.data = copy.copy(data)
         data_filobj.data = data
 
-        if calc_snr_true_filter is True:
+        if calc_snr is True:
             print("Calculating true filter")
             prof_true_filobj = copy.deepcopy(data_filobj)
             prof_true_filobj.dedisperse(dm_, ref_freq=freq_ref)
@@ -400,8 +400,8 @@ if __name__=='__main__':
                         help="max dms to use, either float or tuple", 
                       type='float')
 
-    parser.add_option('--calc_snr_true_filter', action='store_true',
-                        help="calculate S/N of injected pulse with inj signal as filter", default=False)
+    parser.add_option('--calc_snr', 
+                      help="calculate S/N of injected pulse with inj signal as filter", default=False)
     
     parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
 
@@ -446,7 +446,7 @@ if __name__=='__main__':
     if len(options.dm_list)==1:
         inject_in_filterbank(fn_fil, fn_fil_out, N_FRB=options.nfrb, NFREQ=options.nfreq,
                                 NTIME=2**15, rfi_clean=options.rfi_clean,
-                                calc_snr_true_filter=options.calc_snr_true_filter, start=0,
+                                calc_snr=options.calc_snr, start=0,
                                 dm=float(options.dm_list[0]), 
                                 gaussian=options.gaussian, 
                                 gaussian_noise=options.gaussian_noise,
@@ -463,7 +463,7 @@ if __name__=='__main__':
     ncpu = multiprocessing.cpu_count() - 1 
     Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
-                                                        calc_snr_true_filter=options.calc_snr_true_filter, start=0,
+                                                        calc_snr=options.calc_snr, start=0,
                                                         dm=float(x), gaussian=options.gaussian, 
                                                         gaussian_noise=options.gaussian_noise,
                                                         upsamp_factor=options.upsamp_factor,

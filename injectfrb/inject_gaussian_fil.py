@@ -76,7 +76,9 @@ if __name__=='__main__':
 
   parser.add_option('--fluence_min', dest='fluence_min', default=1.,\
                     help="fluence_min=1 is calibrated to S/N_min=10", 
-                    type='float')
+                    type='float'
+#  parser.add_option('--calc_snr', dest='calc_snr', action='store_true',
+#                        help="write only Gaussian data to fil files", default=False)
 
   parser.add_option('--paramsfile', dest='paramsfile', default=None,\
                     help="txt file with parameters to simulate", 
@@ -126,10 +128,10 @@ if __name__=='__main__':
   os.system('python injectfrb/inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
             --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
-            --dm_low %f --dm_high %f --paramslist %s' \
+            --dm_low %f --dm_high %f --paramslist %s --calc_snr %s' \
             % (fnfil, options.outdir, options.nfrb, \
               options.upsamp_factor, options.upchan_factor, \
-              options.simulator, options.dm_min, options.dm_max, paramsfile))
+               options.simulator, options.dm_min, options.dm_max, paramsfile, options.calc_snr))
 
 
 
