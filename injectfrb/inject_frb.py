@@ -359,7 +359,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 #        f_params_out.write('%5.3f    %4.2f    %4.5f    %8d    %5d    %0.5f    %5f    %2f    %5f    %4.2f\n ' % 
 #                           (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref, freq_ref))
 
-        f_params_out.write(fmt_out % (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref, freq_ref))
+        f_params_out.write('%8.3f  %5.2f  %8.4f %9d %5d  %1.6f    %5f    %5.2f    %1.4f  %8.2f\n' % (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref, freq_ref))
 
         f_params_out.close()
         del data, data_event
