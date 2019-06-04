@@ -154,6 +154,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     f_params_out = open(fn_params_out, 'w+')
     f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact    Width_int    With_obs    Spec_ind    Scat_tau_ref   Freq_ref\n')
     f_params_out.close()
+    fmt_out = '%5.3f    %3.2f    %5.5f    %9d    %d    %5f    %5f    %2f    %1.5f\n'
 
     if gaussian==True:
         fn_fil_out = fn_fil_out.strip('.fil') + '_gaussian.fil'
@@ -355,8 +356,13 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         samplecounter += data.shape[1]
         f_params_out = open(fn_params_out, 'a+')
-        f_params_out.write('%5.3f    %4.2f    %4.5f    %8d    %5d    %0.5f    %5f    %2f    %5f    %4.2f\n ' % 
-                           (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref, freq_ref))
+#        f_params_out.write('%5.3f    %4.2f    %4.5f    %8d    %5d    %0.5f    %5f    %2f    %5f    %4.2f\n ' % 
+#                           (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref, freq_ref))
+
+        f_params_out.write(fmt_out % 
+                           (params[0], snr_max, t0, t0_ind, downsamp, 
+                            width_sec, width_obs, spec_ind, 
+                            scat_tau_ref, freq_ref))
 
         f_params_out.close()
         del data, data_event
