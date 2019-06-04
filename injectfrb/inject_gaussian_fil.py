@@ -125,7 +125,8 @@ if __name__=='__main__':
                                  width_sig=1, fnout=paramsfile)
   else:
     paramsfile = options.paramsfile
-
+  print('dink', options.calc_snr)
+  exit()
   os.system('python injectfrb/inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
             --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
