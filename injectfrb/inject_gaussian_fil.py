@@ -76,9 +76,10 @@ if __name__=='__main__':
 
   parser.add_option('--fluence_min', dest='fluence_min', default=1.,\
                     help="fluence_min=1 is calibrated to S/N_min=10", 
-                    type='float'
-#  parser.add_option('--calc_snr', dest='calc_snr', action='store_true',
-#                        help="write only Gaussian data to fil files", default=False)
+                    type='float')
+
+  parser.add_option('--calc_snr', dest='calc_snr', action='store_true',
+                    help="write only Gaussian data to fil files", default=False)
 
   parser.add_option('--paramsfile', dest='paramsfile', default=None,\
                     help="txt file with parameters to simulate", 
