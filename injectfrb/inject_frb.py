@@ -433,7 +433,8 @@ if __name__=='__main__':
     fn_fil = args[0]
     fn_fil_out = args[1]
 
-    print('fin', options.calc_snr)
+    print('fink', options.calc_snr)
+    exit()
     if options.dm_low is None:
         if options.dm_high is None:
             dm = 500.
