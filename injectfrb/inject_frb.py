@@ -54,7 +54,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=1000.0, dt=8.192e-5,
                          chunksize=2, calc_snr=True, start=0, 
-                         freq_ref=None, subtract_zero=False, clipping=None, 
+                         freq_ref=None, clipping=None, 
                          gaussian=False, gaussian_noise=True,
                          upchan_factor=2, upsamp_factor=2, 
                          simulator='injectfrb', paramslist=None, noise_std=18.,
@@ -88,8 +88,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         start sample 
     freq_ref : float 
         reference frequency for injection code 
-    subtract_zero : bool 
-        subtract zero DM timestream from data 
     clipping : 
         zero out bright events in zero-DM timestream 
     nbit : int 
@@ -193,7 +191,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             NTIME = chunksize
             offset = 0
             data_filobj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
-                                                                      start=0, stop=1)
+                                                                     start=0, stop=1)
             data = np.empty([NFREQ, NTIME])
         else:
             # drop FRB in random location in data chunk
@@ -302,15 +300,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         data_rb = data_filobj.data
 
-#        plt.figure()
-#        plt.subplot(121)
-#        plt.imshow(prof_true_filobj.data, aspect='auto')
-#        plt.subplot(122)
-#        plt.plot(data_rb.mean(0))
-#        plt.axvline(len(data_rb[0])-end_pix, color='red')
-#        plt.axvline(start_pix, color='red')
-#        plt.show()
-
         data_rb = data_rb[:, start_pix:-end_pix].mean(0)
 
         snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
@@ -333,11 +322,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), dt)
-
-        if subtract_zero is True:
-            print("Subtracting zero DM")
-            data_ts_zerodm = data.mean(0)
-            data -= data_ts_zerodm[None]
 
         if clipping is not None:
             # Find tsamples > 8sigma and replace them with median
@@ -393,7 +377,7 @@ if __name__=='__main__':
                         help="apply rfi filters")
 
     parser.add_option('--dm_low', dest='dm_low', default=None,\
-                        help="min dm to use, either float or tuple", 
+                      help="min dm to use, either float or tuple", 
                       type='float')
 
     parser.add_option('--dm_high', dest='dm_high', default=None,\

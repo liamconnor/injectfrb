@@ -15,8 +15,9 @@ try:
 except:
 	pass 
 
+from injectfrb import filterbank
 try:
-    import filterbank
+    from injectfrb import filterbank
 except:
     pass
 
