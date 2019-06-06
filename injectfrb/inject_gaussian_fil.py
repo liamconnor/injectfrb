@@ -8,33 +8,11 @@ import numpy as np
 import optparse
 
 from injectfrb import simulate_frb
+from injectfrb import simulation_config
 
 spec_ind_min = -4
 spec_ind_max = 4
 width_mean = 0.001
-
-filhdr = {'telescope_id': 10,
-      'az_start': 0.0,
-      'nbits': 8,
-      'source_name': 'J1813-1749',
-      'data_type': 1,
-      'nchans': 336,
-      'machine_id': 15,
-#      'tsamp': 8.192e-5,
-      'tsamp' : 0.0013,
-#      'foff': -0.1953125,
-      'foff': -1.,
-      'src_raj': 181335.2,
-      'src_dej': -174958.1,
-      'tstart': 58523.3437492,
-      'nbeams': 1,
-#      'fch1' : 2000.0,
-#      'fch1': 1549.700927734375,
-      'fch1' : 1549.700927734375,
-      'za_start': 0.0,
-      'rawdatafile': '',
-      'nifs': 1,
-      'nsamples': 7204148}
 
 if __name__=='__main__':
 
@@ -88,25 +66,8 @@ if __name__=='__main__':
   options, args = parser.parse_args()
 
   fnfil = options.fnfil
-
-  filhdr['rawdatafile'] = fnfil
-
-  try:
-      import sigproc
-
-      newhdr = ""
-      newhdr += sigproc.addto_hdr("HEADER_START", None)
-      for k,v in filhdr.items():
-          newhdr += sigproc.addto_hdr(k, v)
-      newhdr += sigproc.addto_hdr("HEADER_END", None)
-      print("Writing new header to '%s'" % fnfil)
-      outfile = open(fnfil, 'wb')
-      outfile.write(newhdr)
-      spectrum = np.zeros([filhdr['nchans']], dtype=np.uint8)
-      outfile.write(spectrum)
-      outfile.close()
-  except:
-      print("Could not load sigproc / create filterbank")
+  
+  simulation_config.create_new_filterbank(fnfil)
 
   if not os.path.isfile(fnfil):
     print("Need either a test .fil file or sigproc")
