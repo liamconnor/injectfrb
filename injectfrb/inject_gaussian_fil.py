@@ -10,10 +10,6 @@ import optparse
 from injectfrb import simulate_frb
 from injectfrb import simulation_config
 
-spec_ind_min = -4
-spec_ind_max = 4
-width_mean = 0.001
-
 if __name__=='__main__':
 
   parser = optparse.OptionParser(prog="inject_frb.py", \
@@ -52,6 +48,18 @@ if __name__=='__main__':
                       help="min dm to use, either float or tuple", 
                     type='float')
 
+  parser.add_option('--spec_min', dest='spec_min', default=-4.,\
+                      help="min spectral index of uniform dist", 
+                    type='float')
+
+  parser.add_option('--spec_max', dest='spec_max', default=+4.,\
+                      help="max spectral index of uniform dist", 
+                    type='float')
+
+  parser.add_option('--width_mean', dest='width_mean', default=0.001,\
+                      help="mean pulse width seconds", 
+                    type='float')
+
   parser.add_option('--fluence_min', dest='fluence_min', default=1.,\
                     help="fluence_min=1 is calibrated to S/N_min=10", 
                     type='float')
@@ -63,11 +71,15 @@ if __name__=='__main__':
                     help="txt file with parameters to simulate", 
                     type="str")
 
+  parser.add_option('--tel', dest='tel', default='Apertif',\
+                    help="name of telescope (Apertif, CHIME, ASKAP)",
+                    type="str")
+
   options, args = parser.parse_args()
 
   fnfil = options.fnfil
   
-  simulation_config.create_new_filterbank(fnfil)
+  simulation_config.create_new_filterbank(fnfil, telescope=options.tel)
 
   if not os.path.isfile(fnfil):
     print("Need either a test .fil file or sigproc")
@@ -82,18 +94,20 @@ if __name__=='__main__':
     
     ES = simulate_frb.EventSimulator()
     ES.draw_event_parameters_array(fluence_min=options.fluence_min, dm_min=options.dm_min, dm_max=options.dm_max, 
-                                 nfrb=options.nfrb, spec_ind_min=spec_ind_min, spec_ind_max=spec_ind_max, width_mean=width_mean, 
+                                 nfrb=options.nfrb, spec_ind_min=options.spec_min, spec_ind_max=options.spec_max, 
+                                 width_mean=options.width_mean, 
                                  width_sig=1, fnout=paramsfile)
   else:
     paramsfile = options.paramsfile
 
-  os.system('python injectfrb/inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
+  os.system('inject_frb.py %s %s --nfrb %d --dm_list 10.0 \
             --gaussian_noise --upchan_factor %d \
             --upsamp_factor %d --simulator %s\
             --dm_low %f --dm_high %f --paramslist %s --calc_snr %s' \
             % (fnfil, options.outdir, options.nfrb, \
-              options.upsamp_factor, options.upchan_factor, \
-               options.simulator, options.dm_min, options.dm_max, paramsfile, options.calc_snr))
+               options.upsamp_factor, options.upchan_factor, \
+               options.simulator, options.dm_min, options.dm_max, 
+               paramsfile, options.calc_snr))
 
 
 

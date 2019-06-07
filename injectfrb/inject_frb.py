@@ -22,9 +22,9 @@ except:
     plt = None
     pass
 
-import simulate_frb
-import reader
-import tools
+from injectfrb import simulate_frb
+from injectfrb import reader
+from injectfrb import tools
 
 
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
