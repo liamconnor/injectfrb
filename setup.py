@@ -11,7 +11,7 @@ if VERSION_DEV:
     VERSION = VERSION + ".dev%d" % VERSION_DEV
 
 SCRIPTS = ["injectfrb/inject_gaussian_fil.py",
-		   ]
+	   "injectfrb/inject_frb.py"]
 
 setup(
     name = "injectfrb",
