@@ -17,7 +17,9 @@ filhdr_ASKAP = {'telescope_id': 1,
       'za_start': 0.0,
       'rawdatafile': '',
       'nifs': 1,
-      'nsamples': 7204148}
+      #'nsamples': 12500
+      }
+
 
 filhdr_Apertif = {'telescope_id': 2,
       'az_start': 0.0,
@@ -32,11 +34,12 @@ filhdr_Apertif = {'telescope_id': 2,
       'src_dej': -174958.1,
       'tstart': 58523.3437492,
       'nbeams': 1,
-      'fch1': 1549.700927734375,
+      'fch1': 1519.50561523,
       'za_start': 0.0,
       'rawdatafile': '',
       'nifs': 1,
-      'nsamples': 7204148}
+      #'nsamples': 12500
+      }
 
 filhdr_CHIME = {'telescope_id': 3,
       'az_start': 0.0,
@@ -55,7 +58,8 @@ filhdr_CHIME = {'telescope_id': 3,
       'za_start': 0.0,
       'rawdatafile': '',
       'nifs': 1,
-      'nsamples': 7204148}
+      #'nsamples': 12500
+      }
 
 
 def create_new_filterbank(fnfil, telescope='ASKAP'):
@@ -85,4 +89,3 @@ def create_new_filterbank(fnfil, telescope='ASKAP'):
       outfile.close()
    except:
       print("Either could not load sigproc or create filterbank")
-

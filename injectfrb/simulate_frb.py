@@ -172,7 +172,7 @@ class Event(object):
         NFREQ = data.shape[0]
         NTIME = data.shape[1]
         tmid = NTIME//2
-    
+
         if scintillate:
             scint_amp = self.scintillation(freq)
 
@@ -184,7 +184,7 @@ class Event(object):
             stds = 1
         else:
             stds = np.std(data)
-
+        
         for ii, f in enumerate(freq):
             # if data[ii].sum()==0:
             #     continue

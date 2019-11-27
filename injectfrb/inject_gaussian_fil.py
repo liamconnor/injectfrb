@@ -18,7 +18,7 @@ if __name__=='__main__':
                       description="Inject FRBs into gaussian filterbank data")
 
   parser.add_option('--fnfil', dest='fnfil', default='injectfrb/data/test.fil',\
-                      help="input filterbank file", 
+                      help="injection filterbank file", 
                     type=str)
 
   parser.add_option('--nfrb', dest='nfrb', type='int', \

@@ -118,6 +118,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     data_fil_obj_skel, freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)
     NFREQ = header['nchans']
+    BW = np.abs(header['nchans']*header['foff'])
 
     if freq_ref is None:
         freq_ref = 0.5*(freq_arr[0]+freq_arr[-1])
@@ -150,9 +151,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     fn_params_out = fn_fil_out.strip('.fil') + '.txt'
 
     f_params_out = open(fn_params_out, 'w+')
-    f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact    Width_int    With_obs    Spec_ind    Scat_tau_ref   Freq_ref\n')
+
+    f_params_out.write('# DM    Sigma   Time (s)   Sample   Downfact   Width_int   With_obs   Spec_ind   Scat_tau_ref  Tsamp (s)  BW_MHz  Freq_hi  Nchan  Freq_ref\n')
     f_params_out.close()
-    fmt_out = '%8.3f  %5.2f  %8.4f %9d %5d  %1.6f    %5f    %5.2f    %1.4f  %8.2f\n'
+    fmt_out = '%8.3f  %5.2f  %8.4f %9d %5d  %1.6f    %5f    %5.2f    %1.4f   %1.4f  %8.2f  %8.2f   %d  %8.2f\n'
 
     if gaussian==True:
         fn_fil_out = fn_fil_out.strip('.fil') + '_gaussian.fil'
@@ -184,7 +186,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if gaussian_noise is True:
             t_delay_max = abs(4.148e3*dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
             t_delay_max_pix = np.int(3*t_delay_max/dt)
-            t_chunksize_min = 1.0
+            t_chunksize_min = 3.0
             chunksize = 2**(np.ceil(np.log2(t_delay_max_pix)))
             chunksize = np.int(max(t_chunksize_min/dt, chunksize))
 
@@ -194,6 +196,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                                                      start=0, stop=1)
             data = np.empty([NFREQ, NTIME])
         else:
+            fluence = 1000.
             # drop FRB in random location in data chunk
             offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
             data_filobj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
@@ -223,7 +226,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                 print("Do not recognize simulator, neither (injectfrb, simpulse)")
                 exit()
         else:
+            NTIME = np.int(2*np.abs(4148*dm*(freq[0]**-2-freq[-1]**-2))/dt)
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
+            print("data_event.shape, offset, NTIME")
+            print(data_event.shape, offset, NTIME, NFREQ)
 
         if simulator=='injectfrb':
             data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
@@ -233,7 +239,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                                background_noise=data_event, 
                                                delta_t=dt/upsamp_factor, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
-                                               FREQ_REF=freq_ref, scintillate=False)
+                                                                FREQ_REF=freq_ref, scintillate=False)
 
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
             data_event *= (20.*noise_std/np.sqrt(NFREQ)) 
@@ -287,7 +293,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             print("not calculating")
             prof_true = None
 
-        data[:, offset:offset+NTIME] += noise_event
+        if gaussian_noise is True:
+            data[:, offset:offset+NTIME] += noise_event
+
         data[data>(2**nbit-1)] = 2**nbit-1
 
         data_filobj.data = copy.copy(data)
@@ -340,12 +348,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         samplecounter += data.shape[1]
         f_params_out = open(fn_params_out, 'a+')
-#        f_params_out.write('%5.3f    %4.2f    %4.5f    %8d    %5d    %0.5f    %5f    %2f    %5f    %4.2f\n ' % 
-#                           (params[0], snr_max, t0, t0_ind, downsamp, width_sec, width_obs, spec_ind, scat_tau_ref, freq_ref))
 
         f_params_out.write(fmt_out % (params[0], snr_max, t0, t0_ind, downsamp, 
                                       width_sec, width_obs, spec_ind, 
-                                      scat_tau_ref, freq_ref))
+                                      scat_tau_ref, dt, BW, header['fch1'], NFREQ, freq_ref))
 
         f_params_out.close()
         del data, data_event
@@ -398,11 +404,11 @@ if __name__=='__main__':
 
     parser.add_option('--upchan_factor', dest='upchan_factor', type='int', \
                         help="Upchannelize data by this factor before injecting. Rebin after.", \
-                        default=2)
+                        default=1)
 
     parser.add_option('--upsamp_factor', dest='upsamp_factor', type='int', \
                         help="Upsample data by this factor before injecting. Downsample after.", \
-                        default=2)
+                        default=1)
 
     parser.add_option('--simulator', dest='simulator', type='str', \
                         help="Either Liam Connor's inject_frb or Kendrick Smith's simpulse", \
