@@ -1,10 +1,10 @@
 import numpy as Num
 import numpy.fft as FFT
-import Pgplot, ppgplot, bisect, sinc_interp, parfile
+#import Pgplot, ppgplot, bisect, sinc_interp, parfile
 from scipy.special import ndtr, ndtri, chdtrc, chdtri, fdtr, i0, kolmogorov
 from scipy.optimize import leastsq
 import scipy.optimize.zeros as zeros
-from psr_constants import *
+#from psr_constants import *
 
 isintorlong = lambda x: type(x) == type(0) or type(x) == type(0L)
 
