@@ -18,10 +18,6 @@ along with a text file with the relevant trigger information in:
 outputdir/injectfrb_nfrb50_*.txt
 
 Requires:
-==========
-
-sigproc 
-
-if a different single-pulse simulator is needed, also requires: 
+========== 
 
 simpulse https://github.com/kmsmith137/simpulse
