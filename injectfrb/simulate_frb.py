@@ -362,14 +362,21 @@ class EventSimulator():
     def draw_event_parameters_array(self, fluence_min=1, dm_min=10., dm_max=2000., nfrb=1, 
                                     spec_ind_min=0., spec_ind_max=0., width_mean=.001, 
                                     width_sig=1, fnout=None):
+        """ Create an array with nfrb rows and 5 columns 
+        after drawing randomly from FRB parameter distributions. 
+        Fluence is currently a Euclidean power-law.
+        DM is a gamma function.
+        width is lognormal.
+        spectral index is uniform between spec_ind_min and spec_ind_max
+        dispersion index is constant at 2.0
+        """
         dm = np.random.uniform(dm_min, dm_max, nfrb)
-        fluence = fluence_min*np.random.uniform(0, 1, nfrb)**(-2/3.) #hack
-        fluence = fluence_min*np.ones([nfrb]) # hack
+        dm = np.random.gamma(3,600,nfrb)
+        fluence = fluence_min*np.random.uniform(0, 1, nfrb)**(-2/3.)
         spec_ind = np.random.uniform(spec_ind_min, spec_ind_max, nfrb)
         disp_ind = 2.*np.ones([nfrb])
         # width distribution in seconds
         width = np.random.lognormal(np.log(width_mean), width_sig, nfrb)
-
         if fnout!=None:
             params_arr = np.concatenate([dm, fluence, width, spec_ind, disp_ind])
             params_arr.shape = (5, nfrb)
