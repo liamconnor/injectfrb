@@ -26,6 +26,8 @@ from injectfrb import simulate_frb
 from injectfrb import reader
 from injectfrb import tools
 
+k_DM=1e3/0.241
+
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
                                   fn_fil_out, N_FRB, chunksize=2**11):
     NFREQ = header['nchans']
@@ -127,7 +129,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         max_dm = max(dm)
 
     max_dm = max(max_dm, dm_max)
-    t_delay_max = abs(4.148e3*max_dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
+    t_delay_max = abs(k_DM*max_dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
     t_delay_max_pix = int(t_delay_max / dt)
 
     # ensure that dispersion sweep is not too large 
@@ -149,7 +151,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     f_params_out = open(fn_params_out, 'w+')
 
-    f_params_out.write('# DM    Sigma   Time (s)   Sample   Downfact   Width_int   With_obs   Spec_ind   Scat_tau_ref  Tsamp (s)  BW_MHz  Freq_hi  Nchan  Freq_ref\n')
+    f_params_out.write('# DM    Sigma   Time (s)   Sample   \
+                        Downfact   Width_int   With_obs   Spec_ind   \
+                        Scat_tau_ref  Tsamp (s)  BW_MHz  Freq_hi  Nchan  Freq_ref\n')
     f_params_out.close()
     fmt_out = '%8.3f  %5.2f  %8.4f %9d %5d  %1.6f    %5f    %5.2f    %1.4f   %1.4f  %8.2f  %8.2f   %d  %8.2f\n'
 
@@ -172,6 +176,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             spec_ind = params_arr[3,ii]
             disp_ind = params_arr[4,ii]
             scat_tau_ref = 0.
+            
+#            tdm = 8.3e-6 * dm * np.diff(freq_arr)[0] / np.mean(freq_arr*1e-3)**3
+#            fluence *= ((width_sec**2 + dt**2 + tdm**2)**0.5 / width_sec)
         else:
             np.random.seed(np.random.randint(12312312))
             fluence = np.random.uniform(0, 1)**(-2/3.)
@@ -181,7 +188,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             width_sec = 2*dt
 
         if gaussian_noise is True:
-            t_delay_max = abs(4.148e3*dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
+            t_delay_max = abs(k_DM*dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
             t_delay_max_pix = np.int(3*t_delay_max/dt)
             t_chunksize_min = 3.0
             chunksize = 2**(np.ceil(np.log2(t_delay_max_pix)))
@@ -195,7 +202,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         else:
             fluence = 1000.
             # drop FRB in random location in data chunk
-            offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
+            #offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
+            offset = 0
             data_filobj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
                                                                       start=start+chunksize*(ii-kk), stop=chunksize)
             data = data_filobj.data            
@@ -222,8 +230,12 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                 print("Do not recognize simulator, neither (injectfrb, simpulse)")
                 exit()
         else:
-            NTIME = np.int(2*np.abs(4148*dm*(freq[0]**-2-freq[-1]**-2))/dt)
+            NTIME = np.int(2*t_delay_max/dt)
+            if data.shape[1]<NTIME:
+                print("Not enough data in the filterbank file. Not injecting.")
+                return
             data_event = (data[:, offset:offset+NTIME]).astype(np.float)
+            
 
         if simulator=='injectfrb':
             data_event, params = simulate_frb.gen_simulated_frb(NFREQ=upchan_factor*NFREQ, 
@@ -235,6 +247,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                                freq=(freq_arr[0], freq_arr[-1]), 
                                                                 FREQ_REF=freq_ref, scintillate=False)
 
+            print(data_event.shape)
             data_event = data_event.reshape(NFREQ, upchan_factor, NTIME, upsamp_factor).mean(-1).mean(1)
             data_event *= (20.*noise_std/np.sqrt(NFREQ)) 
 
@@ -267,7 +280,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         width = width_obs
         downsamp = max(1, int(width/dt))
-        t_delay_mid = 4.148e3*dm_*(freq_ref**-2-freq_arr[0]**-2)
+        t_delay_mid = k_DM*dm_*(freq_ref**-2-freq_arr[0]**-2)
         # this is an empirical hack. I do not know why 
         # the PRESTO arrival times are different from t0 
         # by the dispersion delay between the reference and 
@@ -278,7 +291,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         data_filobj.data = data
 
         if calc_snr is True:
-            print("Calculating true filter with shape: ", data_filobj.data.shape)
+            print("Calculating true filter")
             prof_true_filobj = copy.deepcopy(data_filobj)
             prof_true_filobj.dedisperse(dm_, ref_freq=freq_ref)
             prof_true = np.mean(prof_true_filobj.data, 0)
@@ -296,9 +309,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         data_filobj.data = copy.copy(data)
         data_filobj.dedisperse(dm_, ref_freq=freq_ref)
 
-        start_t = abs(4.148e3*dm_*(freq_arr[0]**-2 - freq_ref**-2))
+        start_t = abs(k_DM*dm_*(freq_arr[0]**-2 - freq_ref**-2))
         start_pix = int(start_t/dt)
-        end_t = abs(4.148e3*dm_*(freq_arr[-1]**-2 - freq_ref**-2))
+        end_t = abs(k_DM*dm_*(freq_arr[-1]**-2 - freq_ref**-2))
         end_pix = int(end_t / dt)
 
         data_rb = data_filobj.data
@@ -310,6 +323,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                                     widths=widths_snr,
                                     true_filter=prof_true)
 
+        #plt.plot(data_filobj.data.mean(0))
+        #plt.legend(['%f %f' % (snr_max, width_max)])
+        #plt.axvline(np.argmax(data_filobj.data.mean(0)), color='red')
+        #plt.show()
         local_thresh = 0.
         if snr_max <= local_thresh:
             print("S/N <= %d: Not writing to file" % local_thresh)
@@ -323,9 +340,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 #        t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
         t0_ind = np.argmax(data_filobj.data.mean(0)) + samplecounter
         t0 = t0_ind*dt #huge hack
-        (1347098, 1705.6187456, 1347676, 2.15863108443136, 0.0012656, (1536, 8192))
-        print(samplecounter, t0, t0_ind, t0*dt, dt, data_filobj.data.shape)
-        print(t0_ind*dt, np.float(t0_ind)*float(dt))
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), dt)
