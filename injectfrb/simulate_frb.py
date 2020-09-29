@@ -39,12 +39,12 @@ class Event(object):
         self._scat_tau_ref = scat_tau_ref
         self.width_max = width
 
-    def disp_delay(self, f, _dm, _disp_ind=-2.):
+    def disp_delay(self, f, _dm, _disp_ind=-2., k_DM=1e3/0.241):
         """ Calculate dispersion delay in seconds for 
         frequency,f, in MHz, _dm in pc cm**-3, and 
         a dispersion index, _disp_ind. 
         """
-        return 4.148808e3 * _dm * (f**(-_disp_ind))
+        return k_DM * _dm * (f**(-_disp_ind))
 
     def arrival_time(self, f):
         t = self.disp_delay(f, self._dm, self._disp_ind)
