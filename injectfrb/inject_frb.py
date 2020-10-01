@@ -290,6 +290,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         #data_filobj.data = copy.copy(data)
         data_filobj.data = data
 
+        # Note presto dedisperse assumes 
         if calc_snr is True:
             print("Calculating true filter")
             prof_true_filobj = copy.deepcopy(data_filobj)
