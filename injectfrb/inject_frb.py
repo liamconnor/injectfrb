@@ -22,9 +22,14 @@ except:
     plt = None
     pass
 
-from injectfrb import simulate_frb
-from injectfrb import reader
-from injectfrb import tools
+try:
+    from injectfrb import simulate_frb
+    from injectfrb import reader
+    from injectfrb import tools
+except:
+    import simulate_frb
+    import reader
+    import tools
 
 k_DM=1e3/0.241
 

@@ -7,8 +7,12 @@ import time
 import numpy as np
 import optparse
 
-from injectfrb import simulate_frb
-from injectfrb import simulation_config
+try:
+  from injectfrb import simulate_frb
+  from injectfrb import simulation_config
+except:
+  import simulate_frb
+  import simulation_config
 
 if __name__=='__main__':
 

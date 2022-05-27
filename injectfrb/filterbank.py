@@ -12,7 +12,10 @@ import os.path
 import numpy as np
 import sigproc
 
-from injectfrb import spectra
+try:
+    from injectfrb import spectra
+except:
+    import spectra
 
 DEBUG = False
 

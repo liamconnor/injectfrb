@@ -6,7 +6,6 @@ import os
 
 import time
 import numpy as np
-import h5py
 import glob
 import pickle
 
@@ -15,11 +14,10 @@ try:
 except:
 	pass 
 
-from injectfrb import filterbank
 try:
     from injectfrb import filterbank
 except:
-    pass
+    import filterbank
 
 def write_to_fil(data, header, fn):
 	filterbank.create_filterbank_file(
