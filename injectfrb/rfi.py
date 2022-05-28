@@ -1,5 +1,5 @@
-# GReX RFI Tests
-# Make a class with all the things
+import sys
+
 import numpy as np 
 import pandas as pd
 
