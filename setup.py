@@ -18,7 +18,7 @@ setup(
     version = VERSION,
     packages = ["injectfrb"],
     scripts = SCRIPTS,
-    install_requires = ['numpy', 'matplotlib'],
+    install_requires = ['numpy'],
     # metadata for upload to PyPI
     author = "Liam Connor",
     author_email = "liam.dean.connor@gmail.com",
