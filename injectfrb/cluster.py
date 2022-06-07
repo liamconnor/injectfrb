@@ -504,9 +504,9 @@ def dm_transform(data, dm_max=20,
 
     dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
 
-    if dm0 is not None:
-        dm_max_jj = np.argmin(abs(dms-dm0))
-        dms += (dm0-dms[dm_max_jj])
+    # if dm0 is not None:
+    #     dm_max_jj = np.argmin(abs(dms-dm0))
+    #     dms += (dm0-dms[dm_max_jj])
 
     data_full = np.zeros([ndm, ntime//downsample])
 
