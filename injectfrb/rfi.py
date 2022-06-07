@@ -70,9 +70,7 @@ if __name__=='__main__':
     fn_fil = sys.argv[1]
     fn_out_fil = sys.argv[2]
     chunksize = 2**16
-
-    t0 = time.time()
-
+    
     for ii in range(int(1e8)):
         data_fil_obj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
                                             start=ii*chunksize, stop=chunksize)
