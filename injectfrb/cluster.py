@@ -319,7 +319,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         else:
             return sig_cut, dm_cut, tt_cut, ds_cut, ind_full, ntrig_clust_arr
 
-def plotfour(dataft, datats, datadmt, 
+def plotfour(dataft, datats, datadmt, header,
              beam_time_arr=None, figname_out=None, dm=0,
              dms=[0,1], 
              datadm0=None, suptitle='', heimsnr=-1,
@@ -494,30 +494,62 @@ def plotfour(dataft, datats, datadmt,
 
     return not_real
 
-def make_candplots(fnfil, fncand):
-	dm, sig, tt, downsample = read_singlepulse(fncand)
-	ncand = len(dm)
-	_, freq, dt, header = reader.read_fil_data(fnfil, start=0, stop=1)
+def dm_transform(data, dm_max=20,
+                 dm_min=0, dm0=None, ndm=64, 
+                 freq_ref=None, downsample=16):
+    """ Transform freq/time data to dm/time data.                                                                                                                                           
+    """
+    ntime = int(data.data.shape[1])
 
-	for ii in range(ncand):
-		dm0, sig0, tt0, downsample0 = dm[ii], sig[ii], tt[ii], downsample[ii]
-		start_ii = int(tt0 / dt)
-		stop_ii = 16384
-		data, freq, dt, header = reader.read_fil_data(fnfil, start=start_ii, stop=stop_ii)
-		data.dedisperse(dm0)
-		data.downsample(int(downsample0))
-		print(ii, dm0, downsample0)
+    dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
+
+    if dm0 is not None:
+        dm_max_jj = np.argmin(abs(dms-dm0))
+        dms += (dm0-dms[dm_max_jj])
+
+    data_full = np.zeros([ndm, ntime//downsample])
+
+    for ii, dm in enumerate(dms):
+        data.dedisperse(dm)
+        _dts = np.mean(data.data,axis=0)
+        data_full[ii] = _dts[:ntime//downsample*downsample].reshape(ntime//downsample, downsample).mean(1)
+
+    return data_full, dms
+
+def make_candplots(fnfil, fncand, ndm=32):
+    dm, sig, tt, downsample = read_singlepulse(fncand)
+    ncand = len(dm)
+    _, freq, dt, header = reader.read_fil_data(fnfil, start=0, stop=1)
+
+    for ii in range(ncand):
+        dm0, sig0, tt0, downsample0 = dm[ii], sig[ii], tt[ii], downsample[ii]
+        downsample0 = int(downsample0)
+        disp_delay = 4140*dm0*(np.abs(freq[0]**-2 - freq[-1]**-2))
+        start_ii = int((tt0-0.5)/dt)
+        stop_ii = 16384
+        data, freq, dt, header = reader.read_fil_data(fnfil, start=start_ii, stop=stop_ii)
+        datadm, dms = dm_transform(data, dm_max=dm0+50,
+                               dm_min=dm0-50, dm0=dm0, ndm=ndm, 
+                               freq_ref=np.mean(freq), 
+                               downsample=downsample0)
+        data.dedisperse(dm0)
+        data.downsample(downsample0)
+        print(ii, dm0, downsample0, data.data)
+        plotfour(data, data.data.mean(0), datadm, header,
+                dm=dm0, ibox=downsample0, dms=dms,
+                heimsnr=sig0, 
+                showplot=False, figname_out='outfig%d.png'%ii)
 
 
 if __name__=='__main__':
-	fn = sys.argv[1]
-	fnout = sys.argv[2]
-	fnfil = sys.argv[3]
-	giants_raw = np.genfromtxt(fn)
-	sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, t_window=2.0)
-	fmt = '%0.5f','%d','%d','%0.3f','%d','%d','%0.2f','%d'
-	np.savetxt(fnout, giants_raw[ind_full], fmt=fmt)
-	make_candplots(fnfil, fnout)
+    fn = sys.argv[1]
+    fnout = sys.argv[2]
+    fnfil = sys.argv[3]
+    giants_raw = np.genfromtxt(fn)
+    sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, t_window=2.0)
+    fmt = '%0.5f','%d','%d','%0.3f','%d','%d','%0.2f','%d'
+    np.savetxt(fnout, giants_raw[ind_full], fmt=fmt)
+    make_candplots(fnfil, fnout)
 
 
 
