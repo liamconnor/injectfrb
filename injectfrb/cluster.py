@@ -535,7 +535,6 @@ def make_candplots(fnfil, fncand, ndm=32):
                                downsample=downsample0)
         data.dedisperse(dm0)
         data.downsample(downsample0)
-        print(ii, dm0, downsample0, data.data)
         plotfour(data, data.data.mean(0), datadm, header,
                 dm=dm0, ibox=downsample0, dms=dms,
                 heimsnr=sig0, 
