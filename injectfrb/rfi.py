@@ -61,7 +61,7 @@ def apply_rfi_filters(data, sigma_thresh_chan=3.0,
                     sigma_thresh_dm0=7.):
     R = RFI(data)
     R.remove_bandpass_Tsys()
-    R.per_channel_sigmacut(sigma_thresh_chan)
+    R.per_channel_sigmacut(1, sigma_thresh_chan)
     R.dm_zero_filter(sigma_thresh_dm0)
 
     return R.data
