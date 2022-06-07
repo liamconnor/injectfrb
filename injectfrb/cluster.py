@@ -500,6 +500,7 @@ def dm_transform(data, dm_max=20,
     """ Transform freq/time data to dm/time data.                                                                                                                                           
     """
     ntime = int(data.data.shape[1])
+    dm_min = max(0, dm_min)
 
     dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
 
@@ -540,6 +541,8 @@ def make_candplots(fnfil, fncand, ndm=32):
                 heimsnr=sig0, 
                 showplot=False, figname_out='outfig%d.png'%ii)
 
+def plot_cluster():
+    plt.scatter()
 
 if __name__=='__main__':
     fn = sys.argv[1]
