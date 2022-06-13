@@ -76,7 +76,8 @@ def apply_rfi_filters(data, sigma_thresh_chan=3.0,
 #    R.per_channel_sigmacut(1, sigma_thresh_chan)
     R.dm_zero_filter(sigma_thresh_dm0)
 
-    R.data = Parallel(n_jobs=20)(delayed(R.per_channel_sigmacut_mproc)(R.data[9*ii:9*(ii+1)],) for ii in range(ncpu))
+    data_list = Parallel(n_jobs=20)(delayed(R.per_channel_sigmacut_mproc)(R.data[9*ii:9*(ii+1)],) for ii in range(ncpu))
+    R.data = np.concatenate(data_list)
 
     return R.data
 
