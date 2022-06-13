@@ -70,23 +70,20 @@ class RFI:
                                                       len(bad_samp))
 
 def apply_rfi_filters(data, sigma_thresh_chan=3.0,
-                    sigma_thresh_dm0=7.):
+                    sigma_thresh_dm0=7., ncpu=20):
     R = RFI(data)
     R.remove_bandpass_Tsys()
-    R.per_channel_sigmacut(1, sigma_thresh_chan)
+#    R.per_channel_sigmacut(1, sigma_thresh_chan)
     R.dm_zero_filter(sigma_thresh_dm0)
 
-    R.data = Parallel(n_jobs=ncpu)(delayed(R.per_channel_sigmacut_mproc)(R.data[8*ii:8*(ii+1)],
-                                         ibox=ibox, pre_rebin=1,
-                                         dm=dm, heim_raw_tres=heim_raw_tres)
-                                         for ii in range(32))
+    R.data = Parallel(n_jobs=20)(delayed(R.per_channel_sigmacut_mproc)(R.data[9*ii:9*(ii+1)],) for ii in range(ncpu))
 
     return R.data
 
 if __name__=='__main__':
     fn_fil = sys.argv[1]
     fn_out_fil = sys.argv[2]
-    chunksize = 2**16
+    chunksize = 2**15
     
     for ii in range(int(1e8)):
         data_fil_obj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
