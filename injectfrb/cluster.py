@@ -353,6 +353,7 @@ def plotfour(dataft, datats, datadmt, header,
                            'snr_dm0_ibeam' : [],
                            'snr_dm0_allbeam' : []}
     datats /= np.std(datats[datats!=np.max(datats)])
+    datats -= np.median(datats[datats!=np.max(datats)])
     nfreq, ntime = dataft.data.shape
     xminplot,xmaxplot = 500.-300*ibox/16.,500.+300*ibox/16 # milliseconds
     if xminplot<0:
@@ -366,7 +367,7 @@ def plotfour(dataft, datats, datadmt, header,
     freqs = np.linspace(freqmin, freqmax, nfreq)
     tarr = np.linspace(tmin, tmax, ntime)
 #    fig = plt.figure(figsize=(8,10))
-    fig, axs = plt.subplots(3, 2, figsize=(8,10), constrained_layout=True)
+    fig, axs = plt.subplots(2, 2, figsize=(8,10), constrained_layout=True)
 
     if fake:
         fig.patch.set_facecolor('red')
@@ -402,87 +403,6 @@ def plotfour(dataft, datats, datadmt, header,
             \nHeimdall ibox : %d\nibeam : %d' % (heimsnr,dm,ibox,ibeam), 
             fontsize=8, verticalalignment='center')
     
-#    parent_axes=fig.add_subplot(324)
-    parent_axes = axs[1][1]
-    if beam_time_arr is None:
-        plt.xticks([])
-        plt.yticks([])
-        plt.text(0.20, 0.55, 'Multibeam info\n not available',
-                fontweight='bold')
-    else:
-        parent_axes.imshow(beam_time_arr[::-1], aspect='auto', extent=[tmin, tmax, 0, beam_time_arr.shape[0]], 
-                  interpolation='nearest')
-        parent_axes.axvline(540, ymin=0, ymax=6, color='r', linestyle='--', alpha=0.55)
-        parent_axes.axvline(460, ymin=0, ymax=6, color='r', linestyle='--', alpha=0.55)
-        parent_axes.axhline(max(0,ibeam-1), xmin=0, xmax=100, color='r', linestyle='--', alpha=0.55)
-        parent_axes.axhline(ibeam+3, xmin=0, xmax=100, color='r', linestyle='--', alpha=0.55)
-        parent_axes.set_xlim(xminplot,xmaxplot)
-        parent_axes.set_xlabel('Time (ms)')
-        parent_axes.set_ylabel('Beam', fontsize=15)
-        small_axes = inset_axes(parent_axes,
-                                width="25%", # width = 30% of parent_bbox
-                                height="25%", # height : 1 inch
-                                loc=4)
-        small_axes.imshow(beam_time_arr[::-1][ibeam-4:ibeam+4],
-                          aspect='auto',
-                          extent=[tmin, tmax, ibeam-4, ibeam+4],
-                          interpolation='nearest', cmap='afmhot')
-        small_axes.set_xlim(400., 600.)
-
-    if datadm0 is not None:
-#        plt.subplot(325)
-        datadm0 -= np.median(datadm0.mean(0))
-        datadm0_sigmas = datadm0.mean(0)/np.std(datadm0.mean(0)[-500:])
-        snr_dm0ts_iBeam = np.max(datadm0_sigmas)
-        axs[2][0].plot(np.linspace(0, tmax, len(datadm0[0])), datadm0_sigmas, c='k')
-        classification_dict['snr_dm0_ibeam'] = snr_dm0ts_iBeam
-        
-        if multibeam_dm0ts is not None:
-#        if False:
-            multibeam_dm0ts -= np.median(multibeam_dm0ts)            
-#            multibeam_dm0ts = multibeam_dm0ts/np.std(multibeam_dm0ts[multibeam_dm0ts!=multibeam_dm0ts.max()])
-            multibeam_dm0ts = multibeam_dm0ts/np.std(multibeam_dm0ts[-500:])
-            snr_dm0ts_allbeams = np.max(multibeam_dm0ts)
-            axs[2][0].plot(np.linspace(0, tmax, len(multibeam_dm0ts)), multibeam_dm0ts, color='C1', alpha=0.75)
-            axs[2][0].legend(['iBeam=%d'%ibeam, 'All beams'], loc=1, fontsize=10)
-            axs[2][0].set_ylabel(r'Power ($\sigma$)')
-            classification_dict['snr_dm0_allbeam'] = snr_dm0ts_allbeams
-        else:
-            axs[2][0].legend(['DM=0 Timestream'], loc=2, fontsize=10)
-        axs[2][0].set_xlabel('Time (ms)')
-                
-        if fnT2clust is not None:
-            T2object = pandas.read_csv(fnT2clust)
-            ind = np.where(np.abs(86400*(imjd-T2object.mjds[:]))<30.0)[0]
-            ttsec = (T2object.mjds.values-imjd)*86400
-            mappable = axs[2][1].scatter(ttsec[ind],
-                                         T2object.ibeam[ind],
-                                         c=T2object.dm[ind],
-                                         s=2*T2object.snr[ind],
-                                         cmap='RdBu_r',
-                                         vmin=0,vmax=1200)
-            fig.colorbar(mappable, label=r'DM (pc cm$^{-3}$)', ax=axs[2][1])
-            axs[2][1].scatter(0, ibeam, s=100, marker='s',
-                        facecolor='none', edgecolor='black')
-            axs[2][1].set_xlim(-10,10.)
-            axs[2][1].set_ylim(0,256)
-            axs[2][1].set_xlabel('Time (s)')
-            axs[2][1].set_ylabel('ibeam')
-
-    not_real = False
-
-    if multibeam_dm0ts is not None:
-        if classification_dict['snr_dm0_allbeam']>7.5:
-            if classification_dict['snr_dm0_ibeam']>10.:
-                if classification_dict['prob']<0.25:
-                    not_real = True
-
-    if classification_dict['prob']<0.01:
-        not_real = True
-
-    if not_real==True:
-        suptitle += ' (Probably not real)'
-
     fig.suptitle(suptitle, color='C1')
     if fake:
         fig.suptitle('INJECTION')
@@ -493,6 +413,99 @@ def plotfour(dataft, datats, datadmt, header,
         fig.show()
 
     return not_real
+
+
+#    parent_axes=fig.add_subplot(324)
+#     parent_axes = axs[1][1]
+#     if beam_time_arr is None:
+#         plt.xticks([])
+#         plt.yticks([])
+#         plt.text(0.20, 0.55, 'Multibeam info\n not available',
+#                 fontweight='bold')
+#     else:
+#         parent_axes.imshow(beam_time_arr[::-1], aspect='auto', extent=[tmin, tmax, 0, beam_time_arr.shape[0]], 
+#                   interpolation='nearest')
+#         parent_axes.axvline(540, ymin=0, ymax=6, color='r', linestyle='--', alpha=0.55)
+#         parent_axes.axvline(460, ymin=0, ymax=6, color='r', linestyle='--', alpha=0.55)
+#         parent_axes.axhline(max(0,ibeam-1), xmin=0, xmax=100, color='r', linestyle='--', alpha=0.55)
+#         parent_axes.axhline(ibeam+3, xmin=0, xmax=100, color='r', linestyle='--', alpha=0.55)
+#         parent_axes.set_xlim(xminplot,xmaxplot)
+#         parent_axes.set_xlabel('Time (ms)')
+#         parent_axes.set_ylabel('Beam', fontsize=15)
+#         small_axes = inset_axes(parent_axes,
+#                                 width="25%", # width = 30% of parent_bbox
+#                                 height="25%", # height : 1 inch
+#                                 loc=4)
+#         small_axes.imshow(beam_time_arr[::-1][ibeam-4:ibeam+4],
+#                           aspect='auto',
+#                           extent=[tmin, tmax, ibeam-4, ibeam+4],
+#                           interpolation='nearest', cmap='afmhot')
+#         small_axes.set_xlim(400., 600.)
+
+#     if datadm0 is not None:
+# #        plt.subplot(325)
+#         datadm0 -= np.median(datadm0.mean(0))
+#         datadm0_sigmas = datadm0.mean(0)/np.std(datadm0.mean(0)[-500:])
+#         snr_dm0ts_iBeam = np.max(datadm0_sigmas)
+#         axs[2][0].plot(np.linspace(0, tmax, len(datadm0[0])), datadm0_sigmas, c='k')
+#         classification_dict['snr_dm0_ibeam'] = snr_dm0ts_iBeam
+        
+#         if multibeam_dm0ts is not None:
+# #        if False:
+#             multibeam_dm0ts -= np.median(multibeam_dm0ts)            
+# #            multibeam_dm0ts = multibeam_dm0ts/np.std(multibeam_dm0ts[multibeam_dm0ts!=multibeam_dm0ts.max()])
+#             multibeam_dm0ts = multibeam_dm0ts/np.std(multibeam_dm0ts[-500:])
+#             snr_dm0ts_allbeams = np.max(multibeam_dm0ts)
+#             axs[2][0].plot(np.linspace(0, tmax, len(multibeam_dm0ts)), multibeam_dm0ts, color='C1', alpha=0.75)
+#             axs[2][0].legend(['iBeam=%d'%ibeam, 'All beams'], loc=1, fontsize=10)
+#             axs[2][0].set_ylabel(r'Power ($\sigma$)')
+#             classification_dict['snr_dm0_allbeam'] = snr_dm0ts_allbeams
+#         else:
+#             axs[2][0].legend(['DM=0 Timestream'], loc=2, fontsize=10)
+#         axs[2][0].set_xlabel('Time (ms)')
+                
+#         if fnT2clust is not None:
+#             T2object = pandas.read_csv(fnT2clust)
+#             ind = np.where(np.abs(86400*(imjd-T2object.mjds[:]))<30.0)[0]
+#             ttsec = (T2object.mjds.values-imjd)*86400
+#             mappable = axs[2][1].scatter(ttsec[ind],
+#                                          T2object.ibeam[ind],
+#                                          c=T2object.dm[ind],
+#                                          s=2*T2object.snr[ind],
+#                                          cmap='RdBu_r',
+#                                          vmin=0,vmax=1200)
+#             fig.colorbar(mappable, label=r'DM (pc cm$^{-3}$)', ax=axs[2][1])
+#             axs[2][1].scatter(0, ibeam, s=100, marker='s',
+#                         facecolor='none', edgecolor='black')
+#             axs[2][1].set_xlim(-10,10.)
+#             axs[2][1].set_ylim(0,256)
+#             axs[2][1].set_xlabel('Time (s)')
+#             axs[2][1].set_ylabel('ibeam')
+
+#     not_real = False
+
+#     if multibeam_dm0ts is not None:
+#         if classification_dict['snr_dm0_allbeam']>7.5:
+#             if classification_dict['snr_dm0_ibeam']>10.:
+#                 if classification_dict['prob']<0.25:
+#                     not_real = True
+
+#     if classification_dict['prob']<0.01:
+#         not_real = True
+
+#     if not_real==True:
+#         suptitle += ' (Probably not real)'
+
+#     fig.suptitle(suptitle, color='C1')
+#     if fake:
+#         fig.suptitle('INJECTION')
+
+#     if figname_out is not None:
+#         fig.savefig(figname_out)
+#     if showplot:
+#         fig.show()
+
+#     return not_real
 
 def dm_transform(data, dm_max=20,
                  dm_min=0, dm0=None, ndm=64, 
@@ -540,18 +553,23 @@ def make_candplots(fnfil, fncand, ndm=32):
                 heimsnr=sig0, 
                 showplot=False, figname_out='outfig%d.png'%ii)
 
-def plot_cluster():
-    plt.scatter()
+def plot_cluster(fn, cluster_index, figname_out):
+    dm, sig, tt, downsample = read_singlepulse(fn, max_rows=None, beam=None)
+    fig = plt.figure(figsize=(12,6))
+    plt.scatter(tt, dm, color=downsample, alpha=0.25, s=sig, cmap='RdBu')
+    plt.scatter(tt[cluster_index], dm[cluster_index], color='k', s=5)
+    plt.savefig(figname_out)
 
 if __name__=='__main__':
     fn = sys.argv[1]
     fnout = sys.argv[2]
     fnfil = sys.argv[3]
     giants_raw = np.genfromtxt(fn)
-    sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, t_window=2.0)
+    sig_cut, dm_cut, tt_cut, ds_cut, cluster_index = get_triggers(fn, t_window=2.0)
+    plot_cluster(fn, cluster_index, figname_out
     fmt = '%0.5f','%d','%d','%0.3f','%d','%d','%0.2f','%d'
-    np.savetxt(fnout, giants_raw[ind_full], fmt=fmt)
-    make_candplots(fnfil, fnout)
+    np.savetxt(fnout, giants_raw[cluster_index], fmt=fmt)
+    make_candplots(fnfil, fnout, 'candidates.pdf')
 
 
 
