@@ -2,7 +2,6 @@ import sys
 
 import numpy as np 
 import pandas as pd
-from joblib import Parallel, delayed
 
 import reader
 
@@ -73,18 +72,18 @@ def apply_rfi_filters(data, sigma_thresh_chan=3.0,
                     sigma_thresh_dm0=7., ncpu=20):
     R = RFI(data)
     R.remove_bandpass_Tsys()
-#    R.per_channel_sigmacut(1, sigma_thresh_chan)
+    R.per_channel_sigmacut(1, sigma_thresh_chan)
     R.dm_zero_filter(sigma_thresh_dm0)
 
-    data_list = Parallel(n_jobs=20)(delayed(R.per_channel_sigmacut_mproc)(R.data[9*ii:9*(ii+1)],) for ii in range(ncpu))
-    R.data = np.concatenate(data_list)
+#    data_list = Parallel(n_jobs=20)(delayed(R.per_channel_sigmacut_mproc)(R.data[9*ii:9*(ii+1)],) for ii in range(ncpu))
+#    R.data = np.concatenate(data_list)
 
     return R.data
 
 if __name__=='__main__':
     fn_fil = sys.argv[1]
     fn_out_fil = sys.argv[2]
-    chunksize = 2**15
+    chunksize = 2**14
     
     for ii in range(int(1e8)):
         data_fil_obj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
