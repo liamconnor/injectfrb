@@ -27,6 +27,7 @@ class RFI:
 
     def per_channel_sigmacut(self, frebin=1, sigma_thresh=3):
         if frebin!=1:
+            print(self.nfreq//frebin, self.nfreq, frebin, self.ntime)
             data_rb = self.data.reshape(self.nfreq//frebin, frebin, self.ntime)
             data_rb = data_rb.mean(1)
         else:
@@ -61,7 +62,7 @@ def apply_rfi_filters(data, sigma_thresh_chan=3.0,
                     sigma_thresh_dm0=7.):
     R = RFI(data)
     R.remove_bandpass_Tsys()
-    R.per_channel_sigmacut(sigma_thresh_chan)
+    R.per_channel_sigmacut(1, sigma_thresh_chan)
     R.dm_zero_filter(sigma_thresh_dm0)
 
     return R.data
@@ -70,8 +71,6 @@ if __name__=='__main__':
     fn_fil = sys.argv[1]
     fn_out_fil = sys.argv[2]
     chunksize = 2**16
-
-    t0 = time.time()
 
     for ii in range(int(1e8)):
         data_fil_obj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
