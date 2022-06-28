@@ -39,6 +39,17 @@ class RFI:
             bad_samp = np.where(data_rb[ii]>dmed_ii + sigma_thresh*sig_ii)[0]
             self.data[frebin*ii:frebin*(ii+1), bad_samp] = dmed_ii
 
+    def per_channel_sigmacut_mproc(self, data, frebin=1, sigma_thresh=3):
+        data_rb = data
+
+        for ii in range(data_rb.shape[0]):
+            sig_ii = np.std(data_rb[ii])
+            dmed_ii = np.median(data_rb[ii])
+            bad_samp = np.where(data_rb[ii]>dmed_ii + sigma_thresh*sig_ii)[0]
+            data_rb[frebin*ii:frebin*(ii+1), bad_samp] = dmed_ii
+
+        return data_rb
+
     def per_sample_sigmacut(self, sigma_thresh=3):
         pass 
 
@@ -59,18 +70,21 @@ class RFI:
                                                       len(bad_samp))
 
 def apply_rfi_filters(data, sigma_thresh_chan=3.0,
-                    sigma_thresh_dm0=7.):
+                    sigma_thresh_dm0=7., ncpu=20):
     R = RFI(data)
     R.remove_bandpass_Tsys()
     R.per_channel_sigmacut(1, sigma_thresh_chan)
     R.dm_zero_filter(sigma_thresh_dm0)
+
+#    data_list = Parallel(n_jobs=20)(delayed(R.per_channel_sigmacut_mproc)(R.data[9*ii:9*(ii+1)],) for ii in range(ncpu))
+#    R.data = np.concatenate(data_list)
 
     return R.data
 
 if __name__=='__main__':
     fn_fil = sys.argv[1]
     fn_out_fil = sys.argv[2]
-    chunksize = 2**16
+    chunksize = 2**14
 
     for ii in range(int(1e8)):
         data_fil_obj, freq_arr, dt, header = reader.read_fil_data(fn_fil, 
